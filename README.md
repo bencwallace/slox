@@ -8,8 +8,10 @@ from the online book [Crafting Interpreters](https://craftinginterpreters.com/).
 
 ## Why Scala?
 
-Besides being relatively straightforward to port from Java, Scala is a natural language for
-writing an interpreter or compiler due to its functional nature. 
+1. To learn Scala
+2. Easy to port from Java
+3. It isn't (at the time of writing) on the [list]() of jlox ports.
+4. Its functional nature makes it natural for writing an interpreter or compiler.
 
 ### Pattern matching
 
