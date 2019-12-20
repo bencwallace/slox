@@ -1,26 +1,35 @@
-## Advantages of Scala
+# slox
 
-* Case classes
-  * TokenType
-  * Expr (much shorter, no need for GenerateAst)
-  * Token (clearly shows advantage of case classes over, e.g. enums)
-* Pattern matching -- replaces visitor pattern
-  * AstPrinter (no visitor pattern)
-  * Interpreter (no visitor pattern or switch statement)
-    * No `instanceOf` or explicit casts
-    * Error check with wildcard
-* Higher-order functions
-  * Parser
+**!Work in progress!**
 
-## Changes to note
+A port of [jlox](https://github.com/munificent/craftinginterpreters/tree/master/java/com/craftinginterpreters),
+the Java implementation of a tree-walk interpreter for the *Lox* language,
+from the online book [Crafting Interpreters](https://craftinginterpreters.com/).
 
-* Use `None` instead of `null`
-* Changed `evaluate` to `eval`
+## Why Scala?
 
-## To do
+Besides being relatively straightforward to port from Java, Scala is a natural language for
+writing an interpreter or compiler due to its functional nature. 
 
-* look into using laziness
-  * e.g. "interlace" lexing and parsing 
-  * http://matt.might.net/articles/implementation-of-lazy-list-streams-in-scala/
-  * http://matt.might.net/articles/implementing-laziness/
-  * https://scala-lang.org/blog/2017/11/28/view-based-collections.html
+### Pattern matching
+
+Scala's *case classes* allow algebraic data types to coexist with a traditional OOP framework.
+Pattern matching on these data types obviate the need for an implementation of the *Visitor pattern*,
+as explained in the book. In particular, they allow for the following simplifications:
+
+* `AstPrinter` does not need the visitor pattern;
+* `Expr` is much shorter;
+* `GenerateAst` can be removed entirely;
+* `Interpreter` does not need the visitor pattern, switch statements, `instanceOf`,
+or explicit casts, and runtime errors are easy to catch with the wildcard pattern;
+* `Parser` does not need the visitor pattern, and
+
+### Higher-order functions
+
+Higher-order functions are used as follows:
+
+* `Parser` can be simplified by refactoring the various binary expression parsers.
+
+### Small changes
+
+* `null` has been replaced by `None`
