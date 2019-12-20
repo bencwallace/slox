@@ -1,17 +1,42 @@
 package com.craftinginterpreters.lox
 
+import scala.collection.mutable.ArrayBuffer
+
 class Parser(tokens: Seq[Token]) {
 
   var current = 0
 
   private case class ParseError() extends RuntimeException
 
-  def parse(): Option[Expr] =
-    try {
-      Some(expression())
-    } catch {
-      case ParseError() => None
-    }
+  def parse(): Seq[Stmt] = {
+    val statements = ArrayBuffer[Stmt]()
+    while (!isAtEnd)
+      statements += statement
+    statements.toSeq
+  }
+
+//  def parse(): Option[Expr] =
+//    try {
+//      Some(expression())
+//    } catch {
+//      case ParseError() => None
+//    }
+
+  // statement parsers
+
+  private def statement(): Stmt = if (matchTokens(PRINT)) printStatement() else expressionStatement()
+
+  private def printStatement(): Stmt = {
+    val expr = expression()
+    consume(SEMICOLON, "Expect ';' after value.")
+    Print(expr)
+  }
+
+  private def expressionStatement(): Stmt = {
+    val expr = expression()
+    consume(SEMICOLON, "Expect ';' after expression.")
+    Expression(expr)
+  }
 
   // expression parsers
 

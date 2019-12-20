@@ -19,19 +19,17 @@ object Lox {
     }
 
   // todo: fix this on ctrl+d
-  private def run(source: String): Unit = {
-    val scanner = new Scanner(source)
-    val tokens = scanner.scanTokens()
+  private def run(source: String): Unit =
+    if (source == null) sys.exit(66)
+    else {
+      val scanner = new Scanner(source)
+      val tokens = scanner.scanTokens()
 
-    val parser = new Parser(tokens)
-    val exprOpt = parser.parse()
+      val parser = new Parser(tokens)
+      val statements = parser.parse()
 
-    if (hadError || hadRuntimeError) println()
-    else exprOpt match {
-      case Some(expr) => Interpreter.interpret(expr)
-      //        println (AstPrinter.print (expr) )
-      case None => ()
-      }
+      if (hadError || hadRuntimeError) println()
+      else Interpreter.interpret(statements)
     }
 
   private def runPrompt(): Unit =

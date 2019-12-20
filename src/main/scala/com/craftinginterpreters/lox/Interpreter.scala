@@ -2,13 +2,19 @@ package com.craftinginterpreters.lox
 
 object Interpreter {
 
-  def interpret(expr: Expr): Unit = {
+  def interpret(statements: Seq[Stmt]): Unit =
     try {
-      val value = eval(expr)
-      println(stringify(value))
+      for (statement <- statements) execute(statement)
     } catch {
       case error: RuntimeError => Lox.runtimeError(error)
     }
+
+  private def execute(statement: Stmt): Unit = statement match {
+    case Expression(expr) => {
+      eval(expr)  // todo: why? just to check for error?
+      ()
+    }
+    case Print(expr) => println(stringify(eval(expr)))
   }
 
   // note: very good use of pattern matching rather than visitor pattern + switch statement
@@ -20,7 +26,7 @@ object Interpreter {
       case _ => throw new RuntimeError(t, "Operand must be a number.")
     }
     case Unary(Token(BANG, _, _, _), right) => eval(right) match {
-      case None | Some(false) => None
+      case None | Some(false) => Some(false)
       case _ => Some(true)
     }
     case Binary(left, Token(EQUAL_EQUAL, _, _, _), right) => Some(eval(left) == eval(right))
@@ -35,7 +41,6 @@ object Interpreter {
         case GREATER_EQUAL => Some(x >= y)
         case LESS => Some(x < y)
         case LESS_EQUAL => Some (x <= y)
-        case EQUAL_EQUAL => None
       }
       case (Some(x: String), Some(y: String)) => t match {
         case PLUS => Some(x + y)
