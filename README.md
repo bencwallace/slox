@@ -23,13 +23,10 @@ as explained in the book. In particular, they allow for the following simplifica
 * `Interpreter` does not need the visitor pattern, switch statements, `instanceOf`,
 or explicit casts, and runtime errors are easy to catch with the wildcard pattern;
 * `Parser` does not need the visitor pattern, and
+* `Stmt` is much shorter
 
 ### Higher-order functions
 
 Higher-order functions are used as follows:
 
 * `Parser` can be simplified by refactoring the various binary expression parsers.
-
-### Small changes
-
-* `null` has been replaced by `None`
