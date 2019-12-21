@@ -38,7 +38,6 @@ class Scanner(val source: String) {
         case _ => scanTokensRec(acc :+ token)
       }
     }
-    // todo: replaced IndexedSeq by ArraySeq or ArrayBuffer
     scanTokensRec(IndexedSeq())
   }
 

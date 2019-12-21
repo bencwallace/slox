@@ -17,6 +17,12 @@ class Interpreter {
       eval(expr)
       ()
     }
+    case If(condition, thenBranch, elseBranch) =>
+      if (eval(condition).isTruthy) execute(thenBranch)
+      else elseBranch match {
+        case Some(s) => execute(s)
+        case None => ()
+      }
     case Print(expr) => println(eval(expr).toString)
     case Var(name, None) => environment.define(name.lexeme, Nil)
     case Var(name, Some(expr)) => environment.define(name.lexeme, eval(expr))
@@ -61,10 +67,7 @@ class Interpreter {
       case Number(x) => Number(-x)
       case _ => throw RuntimeError(t, "Operand must be a number.")
     }
-    case Unary(Token(BANG, _, _, _), right) => eval(right) match {
-      case Nil | Bool(false) => Bool(false)
-      case _ => Bool(true)
-    }
+    case Unary(Token(BANG, _, _, _), right) => Bool(eval(right).isTruthy)
     case Variable(token) => environment.get(token)
     case _ => ???
   }

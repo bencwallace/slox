@@ -50,16 +50,12 @@ class Parser(tokens: Seq[Token]) {
   // statement parsers
 
   private def statement(): Stmt =
-    if (matchTokens(PRINT)) printStatement()
-    else if (matchTokens(LEFT_BRACE)) Block(block())
+    if (matchTokens(LEFT_BRACE)) Block(block())
+    else if (matchTokens(IF)) ifStatement()
+    else if (matchTokens(PRINT)) printStatement()
     else expressionStatement()
 
-  private def printStatement(): Stmt = {
-    val expr = expression()
-    consume(SEMICOLON, "Expect ';' after value.")
-    Print(expr)
-  }
-
+  // todo: not the most elegant implementation
   private def block(): Seq[Stmt] = {
     val statements = mutable.Queue[Stmt]()
 
@@ -69,6 +65,24 @@ class Parser(tokens: Seq[Token]) {
     consume(RIGHT_BRACE, "Expect '}' after block.")
     statements.toSeq
   }
+
+  private def ifStatement(): Stmt = {
+    consume(LEFT_PAREN, "Expect '(' after 'if'.")
+    val condition = expression()
+    consume(RIGHT_PAREN, "Expect ')' after if condition.")
+
+    val thenBranch = statement()
+    val elseBranch = if (matchTokens(ELSE)) Some(statement()) else None
+
+    If(condition, thenBranch, elseBranch)
+  }
+
+  private def printStatement(): Stmt = {
+    val expr = expression()
+    consume(SEMICOLON, "Expect ';' after value.")
+    Print(expr)
+  }
+
 
   private def expressionStatement(): Stmt = {
     val expr = expression()
