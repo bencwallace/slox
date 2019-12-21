@@ -53,7 +53,7 @@ object Lox {
   // runtime errors
 
   private[lox] def runtimeError(error: RuntimeError): Unit = {
-    System.err.println(error.message + "\n[line " + error.token.line + "]")
+    System.err.println(s"${error.message}\n[line ${error.token.line}]")
     hadRuntimeError = true
   }
 
@@ -63,12 +63,12 @@ object Lox {
 
   private[lox] def error(token: Token, message: String): Unit =
     if (token.tokenType == EOF) report(token.line, " at end", message)
-    else report(token.line, " at '" + token.lexeme + "'", message)
+    else report(token.line, s" at '${token.lexeme}'", message)
 
   // error reporting
 
   private def report(line: Int, where: String, message: String): Unit = {
-    System.err.println("[line " + line + "] Error" + where + ": " + message)
+    System.err.println(s"[line $line] Error$where: $message")
     hadError = true
   }
 
