@@ -1,6 +1,7 @@
 package com.craftinginterpreters.lox
 
-import scala.collection.mutable.ArrayBuffer
+import scala.annotation.tailrec
+import scala.collection.mutable.Queue
 
 class Parser(tokens: Seq[Token]) {
 
@@ -8,17 +9,22 @@ class Parser(tokens: Seq[Token]) {
 
   private case class ParseError() extends RuntimeException
 
-  def parse(): Seq[Stmt] = {
-    val statements = ArrayBuffer[Stmt]()
-    while (!isAtEnd)
-      statements += topLevelParser()
-    statements.toSeq
+  def parse(): Queue[Stmt] = {
+    @tailrec
+    def parseRec(acc: Queue[Stmt]): Queue[Stmt] = {
+      val statement = topLevelParser()
+      statement match {
+        case End => acc
+        case _ => parseRec(acc.enqueue(statement))
+      }
+    }
+    parseRec(Queue())
   }
 
-  // statement parsers
-
   // todo: update as appropriate
-  private def topLevelParser(): Stmt = declaration()
+  private def topLevelParser(): Stmt =
+    if (isAtEnd) End
+    else declaration()
 
   private def declaration(): Stmt =
     try {
@@ -74,10 +80,6 @@ class Parser(tokens: Seq[Token]) {
     } else left
   }
 
-  private def equality(): Expr = binary(BANG_EQUAL, EQUAL_EQUAL)(comparison)
-
-  private def comparison(): Expr = binary(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)(addition)
-
   private def binary(tokenTypes: TokenType*)(nextParser: () => Expr): Expr = {
     var expr = nextParser()
     while (matchTokens(tokenTypes:_*)) {
@@ -87,6 +89,10 @@ class Parser(tokens: Seq[Token]) {
     }
     expr
   }
+
+  private def equality(): Expr = binary(BANG_EQUAL, EQUAL_EQUAL)(comparison)
+
+  private def comparison(): Expr = binary(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)(addition)
 
   private def addition(): Expr = binary(MINUS, PLUS)(multiplication)
 
@@ -114,7 +120,18 @@ class Parser(tokens: Seq[Token]) {
       Grouping(expr)
     } else throw error(peek, "Expect expression.")
 
-  // utility methods
+  // utility methods (pure)
+
+  private def check(tokenType: TokenType): Boolean =
+    if (isAtEnd) false else peek.tokenType == tokenType
+
+  private def isAtEnd: Boolean = peek.tokenType == EOF
+
+  private def peek: Token = tokens(current)
+
+  private def previous = tokens(current - 1)
+
+  // utility methods (with side-effects)
 
   private def matchTokens(tokenTypes: TokenType*): Boolean = {
     for (tokenType <- tokenTypes) {
@@ -131,25 +148,20 @@ class Parser(tokens: Seq[Token]) {
     previous
   }
 
-  private def check(tokenType: TokenType): Boolean =
-    if (isAtEnd) false else peek.tokenType == tokenType
-
   private def consume(tokenType: TokenType, message: String): Token =
     if (check(tokenType)) advance()
-    else throw error(peek, message)
+    else {
+      throw error(peek, message)
+    }
+
+  // error handling
 
   private def error(token: Token, message: String): ParseError = {
     Lox.error(token, message)
     ParseError()
   }
 
-  private def isAtEnd: Boolean = peek.tokenType == EOF
-
-  private def peek: Token = tokens(current)
-
-  private def previous = tokens(current - 1)
-
-  // todo: fix this
+  // todo: fix
   private def synchronize(): Unit = {
     advance()
 

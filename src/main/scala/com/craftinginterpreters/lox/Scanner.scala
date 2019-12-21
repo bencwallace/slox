@@ -1,7 +1,7 @@
 package com.craftinginterpreters.lox
 
 import scala.annotation.tailrec
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.Queue
 
 object Scanner {
   val keywords = Map(
@@ -29,53 +29,61 @@ class Scanner(val source: String) {
   private var start = 0
   private var current = 0
   private var line = 1
-  private val tokens = ArrayBuffer[Token]()
 
-  def scanTokens(): Seq[Token] = {
-    while (!isAtEnd) {
-      start = current
-      tokens += scanToken()
+  def scanTokens(): Queue[Token] = {
+    @tailrec
+    def scanTokensRec(acc: Queue[Token]): Queue[Token] = {
+      val token = scanToken()
+      token match {
+        case Token(EOF, _, _, _) => acc.enqueue(token)
+        case _ => scanTokensRec(acc.enqueue(token))
+      }
     }
-    tokens += Token(EOF, "", None, line)
-    tokens.toSeq
+    scanTokensRec(Queue())
   }
 
   @tailrec
-  private def scanToken(): Token = advance() match {
-      case '(' => makeToken(LEFT_PAREN)
-      case ')' => makeToken(RIGHT_PAREN)
-      case '{' => makeToken(LEFT_BRACE)
-      case '}' => makeToken(RIGHT_BRACE)
-      case ',' => makeToken(COMMA)
-      case '.' => makeToken(DOT)
-      case '-' => makeToken(MINUS)
-      case '+' => makeToken(PLUS)
-      case ';' => makeToken(SEMICOLON)
-      case '*' => makeToken(STAR)
-      case '!' => makeToken(if (matchToken('=')) BANG_EQUAL else BANG)
-      case '=' => makeToken(if (matchToken('=')) EQUAL_EQUAL else EQUAL)
-      case '<' => makeToken(if (matchToken('=')) LESS_EQUAL else LESS)
-      case '>' => makeToken(if (matchToken('=')) GREATER_EQUAL else GREATER)
-      case '/' =>
-        if (matchToken('/')) {
-          while(peek != '\n' && !isAtEnd) advance()
+  private def scanToken(): Token =
+    if (!isAtEnd) {
+      start = current
+      advance() match {
+        case '(' => makeToken(LEFT_PAREN)
+        case ')' => makeToken(RIGHT_PAREN)
+        case '{' => makeToken(LEFT_BRACE)
+        case '}' => makeToken(RIGHT_BRACE)
+        case ',' => makeToken(COMMA)
+        case '.' => makeToken(DOT)
+        case '-' => makeToken(MINUS)
+        case '+' => makeToken(PLUS)
+        case ';' => makeToken(SEMICOLON)
+        case '*' => makeToken(STAR)
+        case '!' => makeToken(if (matchToken('=')) BANG_EQUAL else BANG)
+        case '=' => makeToken(if (matchToken('=')) EQUAL_EQUAL else EQUAL)
+        case '<' => makeToken(if (matchToken('=')) LESS_EQUAL else LESS)
+        case '>' => makeToken(if (matchToken('=')) GREATER_EQUAL else GREATER)
+        case '/' =>
+          if (matchToken('/')) {
+            while (peek != '\n' && !isAtEnd) advance()
+            scanToken()
+          }
+          else makeToken(SLASH)
+        case ' ' | '\r' | '\t' => {
           scanToken()
         }
-        else makeToken(SLASH)
-      case ' ' | '\r' | '\t' => scanToken()
-      case '\n' => {
-        line += 1
-        scanToken()
+        case '\n' => {
+          line += 1
+          scanToken()
+        }
+        case '"' => string()
+        case c =>
+          if (isDigit(c)) number()
+          else if (isAlpha(c)) identifier()
+          else {
+            Lox.error(line, "Unexpected character.")
+            scanToken()
+          }
       }
-      case '"' => string()
-      case c @ _ =>
-        if (isDigit(c)) number()
-        else if (isAlpha(c)) identifier()
-        else {
-          Lox.error(line, "Unexpected character.")
-          scanToken()
-        }
-  }
+    } else Token(EOF, "", None, line)
 
   // tokenizers
 

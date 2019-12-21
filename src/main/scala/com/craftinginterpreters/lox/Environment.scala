@@ -12,8 +12,11 @@ class Environment {
 
   def define(name: String, value: Value): Unit = values += (name -> value)
 
-  def get(token: Token): Value = values.get(token.lexeme) match {
+  def get(token: Token): Value = {
+    val temp = values.get(token.lexeme)
+    temp match {
       case Some(value) => value
       case None => throw RuntimeError(token, s"Undefined variable '${token.lexeme}'.")
     }
+  }
 }

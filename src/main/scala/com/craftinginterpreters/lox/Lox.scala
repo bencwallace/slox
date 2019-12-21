@@ -26,11 +26,12 @@ object Lox {
       val scanner = new Scanner(source)
       val tokens = scanner.scanTokens()
 
-      val parser = new Parser(tokens)
+      // todo: consider performance re toSeq
+      val parser = new Parser(tokens.toSeq)
       val statements = parser.parse()
 
       if (hadError || hadRuntimeError) println()
-      else interpreter.interpret(statements)
+      else interpreter.interpret(statements.toSeq)
     }
 
   private def runPrompt(): Unit =

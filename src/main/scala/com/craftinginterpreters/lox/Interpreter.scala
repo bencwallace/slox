@@ -53,7 +53,7 @@ class Interpreter {
       case _ => Bool(true)
     }
     case Variable(token) => environment.get(token)
-    case _ => ??? // todo: error
+    case _ => ???
   }
 
 }
