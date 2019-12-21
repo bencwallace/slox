@@ -5,10 +5,11 @@ object AstPrinter {
   // note: pattern matching used instead of visitor pattern
   def print(expr: Expr): String = expr match {
     case Binary(left, operator, right) => parenthesize(operator.lexeme, left, right)
-    case Grouping(expr) => parenthesize("group", expr)
     case Unary(operator, right) => parenthesize(operator.lexeme, right)
-    case Literal(Nil()) => "nil"
+    case Grouping(expr) => parenthesize("group", expr)
+    case Literal(Nil) => "nil"
     case Literal(value) => value.toString
+    case Variable(_) => ???
   }
 
   def parenthesize(name: String, exprs: Expr*): String = {

@@ -124,7 +124,6 @@ class Scanner(val source: String) {
       advance()
     }
 
-    // todo: does this return?
     if (isAtEnd) Lox.error(line, "Unterminated string.")
     else {
       // consume closing quote

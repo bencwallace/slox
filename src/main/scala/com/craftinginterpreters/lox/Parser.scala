@@ -84,9 +84,10 @@ class Parser(tokens: Seq[Token]) {
   private def primary(): Expr =
     if (matchTokens(FALSE)) Literal(Bool(false))
     else if (matchTokens(TRUE)) Literal(Bool(true))
-    else if (matchTokens(NIL)) Literal(Nil())
+    else if (matchTokens(NIL)) Literal(Nil)
     else if (matchTokens(NUMBER, STRING)) previous.literal match {
       case Some(value) => Literal(value)
+      case None => ???
     }
     else if (matchTokens(IDENTIFIER)) Variable(previous)
     else if (matchTokens(LEFT_PAREN)) {

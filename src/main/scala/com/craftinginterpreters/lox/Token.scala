@@ -1,5 +1,8 @@
 package com.craftinginterpreters.lox
 
-case class Token(val tokenType: TokenType, val lexeme: String, val literal: Option[Value], val line: Int) {
+case class Token(tokenType: TokenType,
+                 lexeme: String,
+                 literal: Option[Value],
+                 line: Int) {
   override def toString: String = tokenType.toString + " " + lexeme + " " + literal
 }

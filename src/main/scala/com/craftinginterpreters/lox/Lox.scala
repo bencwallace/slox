@@ -18,7 +18,6 @@ object Lox {
       runPrompt();
     }
 
-  // todo: fix this on ctrl+d
   private def run(source: String): Unit =
     if (source == null) sys.exit(66)
 
@@ -38,14 +37,17 @@ object Lox {
       print("> ")
       run(StdIn.readLine())
       hadError = false
-      hadRuntimeError = false // todo
+      hadRuntimeError = false
     }
 
+  // todo: fix
   private def runFile(path: String): Unit =
     Using(Source.fromFile(path)(Codec.defaultCharsetCodec)) { source =>
-      run(source.mkString)
-      if (hadError) sys.exit(65)
-      if (hadRuntimeError) sys.exit(70)
+      for (line <- source.getLines()) {
+        run(line)
+        if (hadError) sys.exit(65)
+        if (hadRuntimeError) sys.exit(70)
+      }
     }
 
   // runtime errors
