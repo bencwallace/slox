@@ -1,6 +1,8 @@
 package com.craftinginterpreters.lox
 
-object Interpreter {
+class Interpreter {
+
+  private val environment = new Environment()
 
   def interpret(statements: Seq[Option[Stmt]]): Unit =
     try {
@@ -17,7 +19,8 @@ object Interpreter {
       ()
     }
     case Print(expr) => println(eval(expr).toString)
-    case Var(_, _) => ???
+    case Var(name, None) => environment.define(name.lexeme, Nil)
+    case Var(name, Some(expr)) => environment.define(name.lexeme, eval(expr))
   }
 
   private def eval(expr: Expr): Value = expr match {
@@ -34,20 +37,20 @@ object Interpreter {
         case (Number(x), GREATER_EQUAL, Number(y)) => Bool(x >= y)
         case (Number(x), LESS, Number(y)) => Bool(x < y)
         case (Number(x), LESS_EQUAL, Number(y)) => Bool(x <= y)
-        case _ => throw new RuntimeError(token, "Operands must be numbers.")
+        case _ => throw RuntimeError(token, "Operands must be numbers.")
       }
     case Unary(t @ Token(MINUS, _, _, _), right) => eval(right) match {
       case Number(x) => Number(-x)
-      case _ => throw new RuntimeError(t, "Operand must be a number.")
+      case _ => throw RuntimeError(t, "Operand must be a number.")
     }
     case Unary(Token(BANG, _, _, _), right) => eval(right) match {
       case Nil | Bool(false) => Bool(false)
       case _ => Bool(true)
     }
-    case Unary(_, _) => ???
     case Grouping(e) => eval(e)
     case Literal(someValue) => someValue
-    case Variable(_) => ???
+    case Variable(token) => environment.get(token)
+    case _ => ??? // todo: error
   }
 
 }
