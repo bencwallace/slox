@@ -63,7 +63,22 @@ class Parser(tokens: Seq[Token]) {
     expr
   }
 
-  private def expression(): Expr = equality()
+  private def expression(): Expr = assignment()
+
+  private def assignment(): Expr = {
+    val expr = equality()
+
+    if (matchTokens(EQUAL)) {
+      val equals = previous
+      val expr = assignment()
+
+      expr match {
+        case Variable(token) => Assign(token, expr)
+        case _ => // todo: jlox doesn't throw error but not clear what else to do here
+          throw error(equals, "Invalid assignment target.")
+      }
+    } else expr
+  }
 
   private def equality(): Expr = binary(BANG_EQUAL, EQUAL_EQUAL)(comparison)
 
@@ -131,13 +146,14 @@ class Parser(tokens: Seq[Token]) {
 
   private def previous = tokens(current - 1)
 
+  // todo: fix this
   private def synchronize(): Unit = {
     advance()
 
     while (!isAtEnd) {
-      if (previous.tokenType == SEMICOLON) ()
+      if (previous.tokenType == SEMICOLON) return ()
       else peek.tokenType match {
-        case CLASS | FUN | VAR | FOR | IF | WHILE | PRINT | RETURN => ()
+        case CLASS | FUN | VAR | FOR | IF | WHILE | PRINT | RETURN => return ()
         case _ => advance()
       }
     }

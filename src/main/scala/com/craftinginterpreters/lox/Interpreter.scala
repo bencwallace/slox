@@ -24,6 +24,11 @@ class Interpreter {
   }
 
   private def eval(expr: Expr): Value = expr match {
+    case Assign(token, expr) => {
+      val value = eval(expr)
+      environment.assign(token, value)
+      value
+    }
     case Binary(left, token @ Token(t, _, _, _), right) =>
       (eval(left), t, eval(right)) match {
         case (l, EQUAL_EQUAL, r) => Bool(l == r)
@@ -39,6 +44,8 @@ class Interpreter {
         case (Number(x), LESS_EQUAL, Number(y)) => Bool(x <= y)
         case _ => throw RuntimeError(token, "Operands must be numbers.")
       }
+    case Grouping(e) => eval(e)
+    case Literal(someValue) => someValue
     case Unary(t @ Token(MINUS, _, _, _), right) => eval(right) match {
       case Number(x) => Number(-x)
       case _ => throw RuntimeError(t, "Operand must be a number.")
@@ -47,8 +54,6 @@ class Interpreter {
       case Nil | Bool(false) => Bool(false)
       case _ => Bool(true)
     }
-    case Grouping(e) => eval(e)
-    case Literal(someValue) => someValue
     case Variable(token) => environment.get(token)
     case _ => ??? // todo: error
   }
