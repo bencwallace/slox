@@ -2,9 +2,11 @@ package com.craftinginterpreters.lox
 
 object Interpreter {
 
-  def interpret(statements: Seq[Stmt]): Unit =
+  def interpret(statements: Seq[Option[Stmt]]): Unit =
     try {
-      for (statement <- statements) execute(statement)
+      // todo: understand how following line works
+      //  and check whether it is intended behaviour
+      for (Some(statement) <- statements) execute(statement)
     } catch {
       case error: RuntimeError => Lox.runtimeError(error)
     }

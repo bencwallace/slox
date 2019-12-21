@@ -8,16 +8,35 @@ class Parser(tokens: Seq[Token]) {
 
   private case class ParseError() extends RuntimeException
 
-  def parse(): Seq[Stmt] = {
-    val statements = ArrayBuffer[Stmt]()
+  def parse(): Seq[Option[Stmt]] = {
+    val statements = ArrayBuffer[Option[Stmt]]()
     while (!isAtEnd)
-      statements += statement
+      statements += declaration()
     statements.toSeq
   }
 
   // statement parsers
 
-  private def statement(): Stmt = if (matchTokens(PRINT)) printStatement() else expressionStatement()
+  private def declaration(): Option[Stmt] =
+    try {
+      if (matchTokens(VAR)) Some(varDeclaration())
+      else Some(statement())
+    } catch {
+      case error: ParseError => {
+        synchronize()
+        None
+      }
+    }
+
+  private def varDeclaration(): Stmt = {
+    val name = consume(IDENTIFIER, "Expect variable name.")
+    val init = if (matchTokens(EQUAL)) Some(expression()) else None
+    consume(SEMICOLON, "Expect ';' after variable declaration.")
+    Var(name, init)
+  }
+
+  private def statement(): Stmt =
+    if (matchTokens(PRINT)) printStatement() else expressionStatement()
 
   private def printStatement(): Stmt = {
     val expr = expression()
@@ -69,6 +88,7 @@ class Parser(tokens: Seq[Token]) {
     else if (matchTokens(NUMBER, STRING)) previous.literal match {
       case Some(value) => Literal(value)
     }
+    else if (matchTokens(IDENTIFIER)) Variable(previous)
     else if (matchTokens(LEFT_PAREN)) {
       val expr = expression()
       consume(RIGHT_PAREN, "Expect ')' after expression.")
@@ -92,7 +112,8 @@ class Parser(tokens: Seq[Token]) {
     previous
   }
 
-  private def check(tokenType: TokenType): Boolean = if (isAtEnd) false else peek.tokenType == tokenType
+  private def check(tokenType: TokenType): Boolean =
+    if (isAtEnd) false else peek.tokenType == tokenType
 
   private def consume(tokenType: TokenType, message: String): Token =
     if (check(tokenType)) advance()

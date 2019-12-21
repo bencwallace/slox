@@ -1,5 +1,3 @@
-// case classes much simplify this
-
 package com.craftinginterpreters.lox
 
 sealed trait Expr
