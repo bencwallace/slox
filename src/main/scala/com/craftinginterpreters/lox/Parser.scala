@@ -1,7 +1,7 @@
 package com.craftinginterpreters.lox
 
 import scala.annotation.tailrec
-import scala.collection.mutable.Queue
+import scala.collection.immutable.Queue
 
 class Parser(tokens: Seq[Token]) {
 
@@ -18,7 +18,7 @@ class Parser(tokens: Seq[Token]) {
         case _ => parseRec(acc.enqueue(statement))
       }
     }
-    parseRec(Queue())
+    parseRec(Queue[Stmt]())
   }
 
   // todo: update as appropriate

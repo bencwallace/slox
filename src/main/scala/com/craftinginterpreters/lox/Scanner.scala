@@ -1,7 +1,6 @@
 package com.craftinginterpreters.lox
 
 import scala.annotation.tailrec
-import scala.collection.mutable.Queue
 
 object Scanner {
   val keywords = Map(
@@ -30,16 +29,17 @@ class Scanner(val source: String) {
   private var current = 0
   private var line = 1
 
-  def scanTokens(): Queue[Token] = {
+  def scanTokens(): Seq[Token] = {
     @tailrec
-    def scanTokensRec(acc: Queue[Token]): Queue[Token] = {
+    def scanTokensRec(acc: Seq[Token]): Seq[Token] = {
       val token = scanToken()
       token match {
-        case Token(EOF, _, _, _) => acc.enqueue(token)
-        case _ => scanTokensRec(acc.enqueue(token))
+        case Token(EOF, _, _, _) => acc :+ token
+        case _ => scanTokensRec(acc :+ token)
       }
     }
-    scanTokensRec(Queue())
+    // todo: replaced IndexedSeq by ArraySeq or ArrayBuffer
+    scanTokensRec(IndexedSeq())
   }
 
   @tailrec

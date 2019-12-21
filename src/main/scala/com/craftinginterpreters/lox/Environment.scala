@@ -7,7 +7,7 @@ class Environment {
 
   def assign(token: Token, value: Value): Unit = values.get(token.lexeme) match {
     case Some(_) => values += (token.lexeme -> value)
-    case None => throw RuntimeError(token, s"Undefined variable'${token.lexeme}'.")
+    case None => throw RuntimeError(token, s"Undefined variable '${token.lexeme}'.")
   }
 
   def define(name: String, value: Value): Unit = values += (name -> value)
