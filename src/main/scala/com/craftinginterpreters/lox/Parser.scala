@@ -66,18 +66,18 @@ class Parser(tokens: Seq[Token]) {
   private def expression(): Expr = assignment()
 
   private def assignment(): Expr = {
-    val expr = equality()
+    val left = equality()
 
     if (matchTokens(EQUAL)) {
       val equals = previous
-      val expr = assignment()
+      val right = assignment()
 
-      expr match {
-        case Variable(token) => Assign(token, expr)
+      left match {
+        case Variable(token) => Assign(token, right)
         case _ => // todo: jlox doesn't throw error but not clear what else to do here
           throw error(equals, "Invalid assignment target.")
       }
-    } else expr
+    } else left
   }
 
   private def equality(): Expr = binary(BANG_EQUAL, EQUAL_EQUAL)(comparison)
