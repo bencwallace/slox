@@ -21,6 +21,7 @@ object Lox {
   // todo: fix this on ctrl+d
   private def run(source: String): Unit =
     if (source == null) sys.exit(66)
+
     else {
       val scanner = new Scanner(source)
       val tokens = scanner.scanTokens()

@@ -15,13 +15,6 @@ class Parser(tokens: Seq[Token]) {
     statements.toSeq
   }
 
-//  def parse(): Option[Expr] =
-//    try {
-//      Some(expression())
-//    } catch {
-//      case ParseError() => None
-//    }
-
   // statement parsers
 
   private def statement(): Stmt = if (matchTokens(PRINT)) printStatement() else expressionStatement()
@@ -70,10 +63,12 @@ class Parser(tokens: Seq[Token]) {
 
 
   private def primary(): Expr =
-    if (matchTokens(FALSE)) Literal(Some(false))
-    else if (matchTokens(TRUE)) Literal(Some(true))
-    else if (matchTokens(NIL)) Literal(None)
-    else if (matchTokens(NUMBER, STRING)) Literal(previous.literal)
+    if (matchTokens(FALSE)) Literal(Bool(false))
+    else if (matchTokens(TRUE)) Literal(Bool(true))
+    else if (matchTokens(NIL)) Literal(Nil())
+    else if (matchTokens(NUMBER, STRING)) previous.literal match {
+      case Some(value) => Literal(value)
+    }
     else if (matchTokens(LEFT_PAREN)) {
       val expr = expression()
       consume(RIGHT_PAREN, "Expect ')' after expression.")

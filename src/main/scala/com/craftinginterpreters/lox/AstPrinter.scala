@@ -7,8 +7,8 @@ object AstPrinter {
     case Binary(left, operator, right) => parenthesize(operator.lexeme, left, right)
     case Grouping(expr) => parenthesize("group", expr)
     case Unary(operator, right) => parenthesize(operator.lexeme, right)
-    case Literal(None) => "nil"
-    case Literal(Some(value)) => value.toString
+    case Literal(Nil()) => "nil"
+    case Literal(value) => value.toString
   }
 
   def parenthesize(name: String, exprs: Expr*): String = {
@@ -28,11 +28,11 @@ object AstPrinter {
     val expression = new Binary(
       new Unary(
         Token(MINUS, "-", None, 1),
-        new Literal(Some(123))
+        new Literal(Number(123))
       ),
       Token(STAR, "*", None, 1),
       new Grouping(
-        new Literal(Some(45.67))
+        new Literal(Number(45.67))
       )
     )
 

@@ -70,7 +70,7 @@ class Scanner(val source: String) {
 
   private def addToken(tokenType: TokenType): Unit = addToken(tokenType, None)
 
-  private def addToken(tokenType: TokenType, literal: Option[Any]): Unit = {
+  private def addToken(tokenType: TokenType, literal: Option[Value]): Unit = {
     val text = source.substring(start, current)
     tokens += Token(tokenType, text, literal, line)
   }
@@ -115,7 +115,7 @@ class Scanner(val source: String) {
       while (isDigit(peek)) advance()
     }
 
-    addToken(NUMBER, Some(source.substring(start, current).toDouble))
+    addToken(NUMBER, Some(Number(source.substring(start, current).toDouble)))
   }
 
   private def string(): Unit = {
@@ -132,7 +132,7 @@ class Scanner(val source: String) {
 
       // trim surrounding quotes
       val value = source.substring(start + 1, current - 1)
-      addToken(STRING, Some(value))
+      addToken(STRING, Some(Str(value)))
     }
   }
 

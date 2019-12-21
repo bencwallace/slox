@@ -7,4 +7,5 @@ sealed trait Expr
 case class Binary(val left: Expr, val operator: Token, val right: Expr) extends Expr
 case class Unary(val operator: Token, val right: Expr) extends Expr
 case class Grouping(val expr: Expr) extends Expr
-case class Literal(val value: Option[Any]) extends Expr
+case class Literal(val value: Value) extends Expr
+case class Variable(name: Token) extends Expr
