@@ -1,5 +1,6 @@
 package com.craftinginterpreters.lox
 
+import scala.annotation.tailrec
 import scala.collection.mutable.ArrayBuffer
 
 object Scanner {
@@ -33,69 +34,59 @@ class Scanner(val source: String) {
   def scanTokens(): Seq[Token] = {
     while (!isAtEnd) {
       start = current
-      scanToken()
+      tokens += scanToken()
     }
     tokens += Token(EOF, "", None, line)
     tokens.toSeq
   }
 
-  private def scanToken(): Unit = advance() match {
-      case '(' => addToken(LEFT_PAREN)
-      case ')' => addToken(RIGHT_PAREN)
-      case '{' => addToken(LEFT_BRACE)
-      case '}' => addToken(RIGHT_BRACE)
-      case ',' => addToken(COMMA)
-      case '.' => addToken(DOT)
-      case '-' => addToken(MINUS)
-      case '+' => addToken(PLUS)
-      case ';' => addToken(SEMICOLON)
-      case '*' => addToken(STAR)
-      case '!' => addToken(if (matchToken('=')) BANG_EQUAL else BANG)
-      case '=' => addToken(if (matchToken('=')) EQUAL_EQUAL else EQUAL)
-      case '<' => addToken(if (matchToken('=')) LESS_EQUAL else LESS)
-      case '>' => addToken(if (matchToken('=')) GREATER_EQUAL else GREATER)
+  @tailrec
+  private def scanToken(): Token = advance() match {
+      case '(' => makeToken(LEFT_PAREN)
+      case ')' => makeToken(RIGHT_PAREN)
+      case '{' => makeToken(LEFT_BRACE)
+      case '}' => makeToken(RIGHT_BRACE)
+      case ',' => makeToken(COMMA)
+      case '.' => makeToken(DOT)
+      case '-' => makeToken(MINUS)
+      case '+' => makeToken(PLUS)
+      case ';' => makeToken(SEMICOLON)
+      case '*' => makeToken(STAR)
+      case '!' => makeToken(if (matchToken('=')) BANG_EQUAL else BANG)
+      case '=' => makeToken(if (matchToken('=')) EQUAL_EQUAL else EQUAL)
+      case '<' => makeToken(if (matchToken('=')) LESS_EQUAL else LESS)
+      case '>' => makeToken(if (matchToken('=')) GREATER_EQUAL else GREATER)
       case '/' =>
-        if (matchToken('/')) while(peek != '\n' && !isAtEnd) advance()
-        else addToken(SLASH)
-      case ' ' | '\r' | '\t' => ()
-      case '\n' => line += 1
+        if (matchToken('/')) {
+          while(peek != '\n' && !isAtEnd) advance()
+          scanToken()
+        }
+        else makeToken(SLASH)
+      case ' ' | '\r' | '\t' => scanToken()
+      case '\n' => {
+        line += 1
+        scanToken()
+      }
       case '"' => string()
       case c @ _ =>
         if (isDigit(c)) number()
         else if (isAlpha(c)) identifier()
-        else Lox.error(line, "Unexpected character.")
+        else {
+          Lox.error(line, "Unexpected character.")
+          scanToken()
+        }
   }
 
-  // utility methods
+  // tokenizers
 
-  private def addToken(tokenType: TokenType): Unit = addToken(tokenType, None)
+  private def makeToken(tokenType: TokenType): Token = makeToken(tokenType, None)
 
-  private def addToken(tokenType: TokenType, literal: Option[Value]): Unit = {
+  private def makeToken(tokenType: TokenType, literal: Option[Value]): Token = {
     val text = source.substring(start, current)
-    tokens += Token(tokenType, text, literal, line)
+    Token(tokenType, text, literal, line)
   }
 
-  private def advance(): Char = {
-    current += 1
-    source.charAt(current - 1)
-  }
-
-  private def isAtEnd: Boolean = current >= source.length
-
-  private def matchToken(expected: Char): Boolean =
-    if (isAtEnd || source.charAt(current) != expected) false
-    else {
-        current += 1
-        true
-      }
-
-  private def peek: Char = if (isAtEnd) '\u0000' else source.charAt(current)
-
-  private def peekNext: Char = if (current + 1 >= source.length) '\u0000' else source.charAt(current + 1)
-
-  // specialized lexers
-
-  private def identifier(): Unit = {
+  private def identifier(): Token = {
     while (isAlphaNumeric(peek)) advance()
 
     val text = source.substring(start, current)
@@ -104,10 +95,10 @@ class Scanner(val source: String) {
       case Some(t) => t
     }
 
-    addToken(tokenType)
+    makeToken(tokenType)
   }
 
-  private def number(): Unit = {
+  private def number(): Token = {
     while (isDigit(peek)) advance()
 
     if (peek == '.' && isDigit(peekNext)) {
@@ -115,32 +106,55 @@ class Scanner(val source: String) {
       while (isDigit(peek)) advance()
     }
 
-    addToken(NUMBER, Some(Number(source.substring(start, current).toDouble)))
+    makeToken(NUMBER, Some(Number(source.substring(start, current).toDouble)))
   }
 
-  private def string(): Unit = {
+  private def string(): Token = {
     while (peek != '"' && !isAtEnd) {
       if (peek == '\n') line += 1
       advance()
     }
 
-    if (isAtEnd) Lox.error(line, "Unterminated string.")
+    if (isAtEnd) {
+      Lox.error(line, "Unterminated string.")
+      scanToken()
+    }
     else {
       // consume closing quote
       advance()
 
       // trim surrounding quotes
       val value = source.substring(start + 1, current - 1)
-      addToken(STRING, Some(Str(value)))
+      makeToken(STRING, Some(Str(value)))
     }
   }
 
-  // character range checks
+  // utility methods (pure)
+
+  private def isAtEnd: Boolean = current >= source.length
+
+  private def peek: Char = if (isAtEnd) '\u0000' else source.charAt(current)
+
+  private def peekNext: Char = if (current + 1 >= source.length) '\u0000' else source.charAt(current + 1)
 
   private def isAlpha(c: Char): Boolean = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'
 
   private def isDigit(c: Char): Boolean = c >= '0' && c <= '9'
 
   private def isAlphaNumeric(c: Char): Boolean = isAlpha(c) || isDigit(c)
+
+  // utility methods with side-effects
+
+  private def advance(): Char = {
+    current += 1
+    source.charAt(current - 1)
+  }
+
+  private def matchToken(expected: Char): Boolean =
+    if (isAtEnd || source.charAt(current) != expected) false
+    else {
+        current += 1
+        true
+      }
 
 }
