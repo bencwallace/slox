@@ -2,7 +2,7 @@
 
 **!Work in progress!**
 
-A port of [jlox](https://github.com/munificent/craftinginterpreters/tree/master/java/com/craftinginterpreters),
+A port of [jlox](https://github.com/munificent/craftinginterpreters/tree/master/java),
 the Java implementation of a tree-walk interpreter for the *Lox* language,
 from the online book [Crafting Interpreters](https://craftinginterpreters.com/).
 
@@ -13,7 +13,8 @@ appropriate.
 
 1. To learn Scala
 2. Easy to port from Java
-3. It isn't (at the time of writing) on the [list]() of jlox ports.
+3. It isn't (at the time of writing) on the [list](https://github.com/munificent/craftinginterpreters/wiki/Lox-implementations)
+of jlox ports.
 4. Its functional nature makes it natural for writing an interpreter or compiler.
 
 ### Pattern matching
