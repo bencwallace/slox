@@ -74,8 +74,10 @@ class Parser(tokens: Seq[Token]) {
 
       left match {
         case Variable(token) => Assign(token, right)
-        case _ => // todo: jlox doesn't throw error but not clear what else to do here
-          throw error(equals, "Invalid assignment target.")
+        case _ => {
+          error(equals, "Invalid assignment target.")
+          left
+        }
       }
     } else left
   }
@@ -137,7 +139,7 @@ class Parser(tokens: Seq[Token]) {
 
   private def error(token: Token, message: String): ParseError = {
     Lox.error(token, message)
-    new ParseError()
+    ParseError()
   }
 
   private def isAtEnd: Boolean = peek.tokenType == EOF
