@@ -4,11 +4,9 @@ class Interpreter {
 
   private val environment = new Environment()
 
-  def interpret(statements: Seq[Option[Stmt]]): Unit =
-    try {
-      // todo: understand how following line works
-      //  and check whether it is intended behaviour
-      for (Some(statement) <- statements) execute(statement)
+  def interpret(statements: Seq[Stmt]): Unit =
+    try { // todo: check whether following has intended behaviour
+      for (statement <- statements) execute(statement)
     } catch {
       case error: RuntimeError => Lox.runtimeError(error)
     }

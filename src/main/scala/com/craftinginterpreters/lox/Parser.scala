@@ -8,23 +8,26 @@ class Parser(tokens: Seq[Token]) {
 
   private case class ParseError() extends RuntimeException
 
-  def parse(): Seq[Option[Stmt]] = {
-    val statements = ArrayBuffer[Option[Stmt]]()
+  def parse(): Seq[Stmt] = {
+    val statements = ArrayBuffer[Stmt]()
     while (!isAtEnd)
-      statements += declaration()
+      statements += topLevelParser()
     statements.toSeq
   }
 
   // statement parsers
 
-  private def declaration(): Option[Stmt] =
+  // todo: update as appropriate
+  private def topLevelParser(): Stmt = declaration()
+
+  private def declaration(): Stmt =
     try {
-      if (matchTokens(VAR)) Some(varDeclaration())
-      else Some(statement())
+      if (matchTokens(VAR)) varDeclaration()
+      else statement()
     } catch {
       case error: ParseError => {
         synchronize()
-        None
+        topLevelParser()
       }
     }
 
@@ -52,17 +55,6 @@ class Parser(tokens: Seq[Token]) {
 
   // expression parsers
 
-  // note: nice application of higher-order functions
-  private def binary(tokenTypes: TokenType*)(nextParser: () => Expr): Expr = {
-    var expr = nextParser()
-    while (matchTokens(tokenTypes:_*)) {
-      val operator = previous
-      val right = nextParser()
-      expr = Binary(expr, operator, right)
-    }
-    expr
-  }
-
   private def expression(): Expr = assignment()
 
   private def assignment(): Expr = {
@@ -86,6 +78,16 @@ class Parser(tokens: Seq[Token]) {
 
   private def comparison(): Expr = binary(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)(addition)
 
+  private def binary(tokenTypes: TokenType*)(nextParser: () => Expr): Expr = {
+    var expr = nextParser()
+    while (matchTokens(tokenTypes:_*)) {
+      val operator = previous
+      val right = nextParser()
+      expr = Binary(expr, operator, right)
+    }
+    expr
+  }
+
   private def addition(): Expr = binary(MINUS, PLUS)(multiplication)
 
   private def multiplication(): Expr = binary(SLASH, STAR)(unary)
@@ -96,7 +98,6 @@ class Parser(tokens: Seq[Token]) {
       val right = unary()
       Unary(operator, right)
     } else primary()
-
 
   private def primary(): Expr =
     if (matchTokens(FALSE)) Literal(Bool(false))
