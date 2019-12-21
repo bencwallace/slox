@@ -26,14 +26,14 @@ object AstPrinter {
   }
 
   def main(args: Array[String]): Unit = {
-    val expression = new Binary(
-      new Unary(
+    val expression = Binary(
+      Unary(
         Token(MINUS, "-", None, 1),
-        new Literal(Number(123))
+        Literal(Number(123))
       ),
       Token(STAR, "*", None, 1),
-      new Grouping(
-        new Literal(Number(45.67))
+      Grouping(
+        Literal(Number(45.67))
       )
     )
 

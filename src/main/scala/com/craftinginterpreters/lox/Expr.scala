@@ -2,8 +2,8 @@ package com.craftinginterpreters.lox
 
 sealed trait Expr
 
-case class Binary(val left: Expr, val operator: Token, val right: Expr) extends Expr
-case class Unary(val operator: Token, val right: Expr) extends Expr
-case class Grouping(val expr: Expr) extends Expr
-case class Literal(val value: Value) extends Expr
-case class Variable(name: Token) extends Expr
+case class Binary(left: Expr, operator: Token, right: Expr) extends Expr
+case class Unary(operator: Token, right: Expr) extends Expr
+case class Grouping(expr: Expr) extends Expr
+case class Literal(value: Value) extends Expr
+case class Variable(token: Token) extends Expr
