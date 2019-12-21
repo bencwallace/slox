@@ -2,7 +2,7 @@ package com.craftinginterpreters.lox
 
 class Interpreter {
 
-  private val environment = new Environment()
+  private var environment = new Environment()
 
   def interpret(statements: Seq[Stmt]): Unit =
     try {
@@ -12,6 +12,7 @@ class Interpreter {
     }
 
   private def execute(statement: Stmt): Unit = statement match {
+    case Block(statements) => executeBlock(statements, new Environment(Some(environment)))
     case Expression(expr) => {
       eval(expr)
       ()
@@ -19,6 +20,18 @@ class Interpreter {
     case Print(expr) => println(eval(expr).toString)
     case Var(name, None) => environment.define(name.lexeme, Nil)
     case Var(name, Some(expr)) => environment.define(name.lexeme, eval(expr))
+    case End => ???
+  }
+
+  private def executeBlock(statements: Seq[Stmt], environment: Environment): Unit = {
+    val previous = this.environment
+    try {
+      this.environment = environment
+      for (statement <- statements)
+        execute(statement)
+    } finally {
+      this.environment = previous
+    }
   }
 
   private def eval(expr: Expr): Value = expr match {

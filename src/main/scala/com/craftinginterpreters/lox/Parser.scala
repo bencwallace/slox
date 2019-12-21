@@ -2,6 +2,7 @@ package com.craftinginterpreters.lox
 
 import scala.annotation.tailrec
 import scala.collection.immutable.Queue
+import scala.collection.mutable
 
 class Parser(tokens: Seq[Token]) {
 
@@ -26,6 +27,8 @@ class Parser(tokens: Seq[Token]) {
     if (isAtEnd) End
     else declaration()
 
+  // declaration parsers
+
   private def declaration(): Stmt =
     try {
       if (matchTokens(VAR)) varDeclaration()
@@ -44,13 +47,27 @@ class Parser(tokens: Seq[Token]) {
     Var(name, init)
   }
 
+  // statement parsers
+
   private def statement(): Stmt =
-    if (matchTokens(PRINT)) printStatement() else expressionStatement()
+    if (matchTokens(PRINT)) printStatement()
+    else if (matchTokens(LEFT_BRACE)) Block(block())
+    else expressionStatement()
 
   private def printStatement(): Stmt = {
     val expr = expression()
     consume(SEMICOLON, "Expect ';' after value.")
     Print(expr)
+  }
+
+  private def block(): Seq[Stmt] = {
+    val statements = mutable.Queue[Stmt]()
+
+    while (!isAtEnd && !check(RIGHT_BRACE))
+      statements.enqueue(declaration())
+
+    consume(RIGHT_BRACE, "Expect '}' after block.")
+    statements.toSeq
   }
 
   private def expressionStatement(): Stmt = {

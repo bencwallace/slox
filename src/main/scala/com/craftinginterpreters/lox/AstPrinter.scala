@@ -4,11 +4,12 @@ object AstPrinter {
 
   // note: pattern matching used instead of visitor pattern
   def print(expr: Expr): String = expr match {
+    case Assign(_, _) => ???
     case Binary(left, operator, right) => parenthesize(operator.lexeme, left, right)
-    case Unary(operator, right) => parenthesize(operator.lexeme, right)
     case Grouping(expr) => parenthesize("group", expr)
     case Literal(Nil) => "nil"
     case Literal(value) => value.toString
+    case Unary(operator, right) => parenthesize(operator.lexeme, right)
     case Variable(_) => ???
   }
 
