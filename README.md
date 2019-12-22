@@ -40,3 +40,4 @@ directly with `Object`.
 Higher-order functions are used as follows:
 
 * `Parser` can be simplified by refactoring the various binary expression parsers.
+

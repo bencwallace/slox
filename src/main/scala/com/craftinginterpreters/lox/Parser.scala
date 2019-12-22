@@ -52,7 +52,9 @@ class Parser(tokens: Seq[Token]) {
   private def statement(): Stmt =
     if (matchTokens(LEFT_BRACE)) Block(block())
     else if (matchTokens(IF)) ifStatement()
+    else if (matchTokens(FOR)) forStatement()
     else if (matchTokens(PRINT)) printStatement()
+    else if (matchTokens(WHILE)) whileStatement()
     else expressionStatement()
 
   // todo: not the most elegant implementation
@@ -77,12 +79,48 @@ class Parser(tokens: Seq[Token]) {
     If(condition, thenBranch, elseBranch)
   }
 
+  private def forStatement(): Stmt = {
+    consume(LEFT_PAREN, "Expect '(' after 'for'.")
+    val initializer =
+      if (matchTokens(SEMICOLON)) None
+      else if (matchTokens(VAR)) Some(varDeclaration())
+      else Some(expressionStatement())
+
+    val condition =
+      if (!check(SEMICOLON)) expression()
+      else Literal(Bool(true))
+    consume(SEMICOLON, "Expect ';' after loop condition.")
+
+    val increment =
+      if (!check(RIGHT_PAREN)) Some(expression())
+      else None
+    consume(RIGHT_PAREN, "Expect ')', after for clauses.")
+
+    val whileLoop = While(condition, increment match {
+      case Some(inc) => Block(Seq(statement(), Expression(inc)))
+      case None => Block(Seq(statement()))
+    })
+
+    Block(initializer match {
+      case Some(init) => Seq(init, whileLoop)
+      case None => Seq(whileLoop)
+    })
+  }
+
   private def printStatement(): Stmt = {
     val expr = expression()
     consume(SEMICOLON, "Expect ';' after value.")
     Print(expr)
   }
 
+  private def whileStatement(): Stmt = {
+    consume(LEFT_PAREN, "Expect '(' after 'while'.")
+    val condition = expression()
+    consume(RIGHT_PAREN, "Expect ')' after condition.")
+    val body = statement()
+
+    While(condition, body)
+  }
 
   private def expressionStatement(): Stmt = {
     val expr = expression()
@@ -95,7 +133,7 @@ class Parser(tokens: Seq[Token]) {
   private def expression(): Expr = assignment()
 
   private def assignment(): Expr = {
-    val left = equality()
+    val left = or()
 
     if (matchTokens(EQUAL)) {
       val equals = previous
@@ -120,6 +158,10 @@ class Parser(tokens: Seq[Token]) {
     }
     expr
   }
+
+  private def or(): Expr = binary(OR)(and)
+
+  private def and(): Expr = binary(AND)(equality)
 
   private def equality(): Expr = binary(BANG_EQUAL, EQUAL_EQUAL)(comparison)
 

@@ -26,6 +26,7 @@ class Interpreter {
     case Print(expr) => println(eval(expr).toString)
     case Var(name, None) => environment.define(name.lexeme, Nil)
     case Var(name, Some(expr)) => environment.define(name.lexeme, eval(expr))
+    case While(condition, body) => while(eval(condition).isTruthy) execute(body)
     case End => ???
   }
 
@@ -45,6 +46,14 @@ class Interpreter {
       val value = eval(expr)
       environment.assign(token, value)
       value
+    }
+    case Binary(left, Token(AND, _, _, _), right) => {
+      val l = eval(left)
+      if (!l.isTruthy) l else eval(right)
+    }
+    case Binary(left, Token(OR, _, _, _), right) => {
+      val l = eval(left)
+      if (l.isTruthy) l else eval(right)
     }
     case Binary(left, token @ Token(t, _, _, _), right) =>
       (eval(left), t, eval(right)) match {
