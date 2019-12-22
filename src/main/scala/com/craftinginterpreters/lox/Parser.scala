@@ -35,10 +35,9 @@ class Parser(tokens: Seq[Token]) {
       else if (matchTokens(VAR)) varDeclaration()
       else statement()
     } catch {
-      case _: ParseError => {
+      case _: ParseError =>
         synchronize()
         topLevelParser()
-      }
     }
 
   // function declaration
@@ -183,10 +182,9 @@ class Parser(tokens: Seq[Token]) {
 
       left match {
         case Variable(token) => Assign(token, right)
-        case _ => {
+        case _ =>
           error(equals, "Invalid assignment target.")
           left
-        }
       }
     } else left
   }
@@ -305,9 +303,9 @@ class Parser(tokens: Seq[Token]) {
     advance()
 
     while (!isAtEnd) {
-      if (previous.tokenType == SEMICOLON) return ()
+      if (previous.tokenType == SEMICOLON) return
       else peek.tokenType match {
-        case CLASS | FUN | VAR | FOR | IF | WHILE | PRINT | RETURN => return ()
+        case CLASS | FUN | VAR | FOR | IF | WHILE | PRINT | RETURN => return
         case _ => advance()
       }
     }

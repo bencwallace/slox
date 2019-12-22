@@ -66,13 +66,11 @@ class Scanner(val source: String) {
             scanToken()
           }
           else makeToken(SLASH)
-        case ' ' | '\r' | '\t' => {
+        case ' ' | '\r' | '\t' =>
           scanToken()
-        }
-        case '\n' => {
+        case '\n' =>
           line += 1
           scanToken()
-        }
         case '"' => string()
         case c =>
           if (isDigit(c)) number()

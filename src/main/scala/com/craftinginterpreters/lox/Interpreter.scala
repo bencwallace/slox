@@ -23,11 +23,10 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
 
   private def execute(statement: Stmt): Unit = statement match {
     case Block(statements) =>
-      (new Interpreter(new Environment(Some(environment)))).executeBlock(statements)
-    case Expression(expr) => {
+      new Interpreter(new Environment(Some(environment))).executeBlock(statements)
+    case Expression(expr) =>
       eval(expr)
       ()
-    }
     case If(condition, thenBranch, elseBranch) =>
       if (eval(condition).isTruthy) execute(thenBranch)
       else elseBranch match {
@@ -37,7 +36,7 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
     case f @ Function(name, _, _) =>
       environment.define(name.lexeme, new LoxFunction(f, environment))
     case Print(expr) => println(eval(expr).toString)
-    case Return(_, expr) => throw new ReturnException(eval(expr))
+    case Return(_, expr) => throw ReturnException(eval(expr))
     case Var(name, None) => environment.define(name.lexeme, NilVal)
     case Var(name, Some(expr)) => environment.define(name.lexeme, eval(expr))
     case While(condition, body) => while(eval(condition).isTruthy) execute(body)
@@ -48,19 +47,16 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
     for (statement <- statements) execute(statement)
 
   private def eval(expr: Expr): Value = expr match {
-    case Assign(token, expr) => {
+    case Assign(token, expr) =>
       val value = eval(expr)
       environment.assign(token, value)
       value
-    }
-    case Binary(left, Token(AND, _, _, _), right) => {
+    case Binary(left, Token(AND, _, _, _), right) =>
       val l = eval(left)
       if (!l.isTruthy) l else eval(right)
-    }
-    case Binary(left, Token(OR, _, _, _), right) => {
+    case Binary(left, Token(OR, _, _, _), right) =>
       val l = eval(left)
       if (l.isTruthy) l else eval(right)
-    }
     case Binary(left, token @ Token(t, _, _, _), right) =>
       (eval(left), t, eval(right)) match {
         case (l, EQUAL_EQUAL, r) => Bool(l == r)
@@ -76,17 +72,16 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
         case (Number(x), LESS_EQUAL, Number(y)) => Bool(x <= y)
         case _ => throw RuntimeError(token, "Operands must be numbers.")
       }
-    case Call(callee, paren, args) => {
+    case Call(callee, paren, args) =>
       val vals = for { arg <- args } yield eval(arg)
       val fcn = eval(callee)
       fcn match {
         case f @ LoxCallable() =>
           if (vals.size != f.arity)
-            throw new RuntimeError(paren, s"Expected ${f.arity} arguments but got ${args.size}.")
+            throw RuntimeError(paren, s"Expected ${f.arity} arguments but got ${args.size}.")
           else f. call(this, vals)
-        case _ => throw new RuntimeError(paren, "Can only call functions and classes.")
+        case _ => throw RuntimeError(paren, "Can only call functions and classes.")
       }
-    }
     case Grouping(e) => eval(e)
     case Literal(someValue) => someValue
     case Unary(t @ Token(MINUS, _, _, _), right) => eval(right) match {
