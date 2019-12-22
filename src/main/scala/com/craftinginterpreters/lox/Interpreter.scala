@@ -34,9 +34,10 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
         case Some(s) => execute(s)
         case None => ()
       }
-    case f @ Function(name, params, body) =>
-      environment.define(name.lexeme, new LoxFunction(f))
+    case f @ Function(name, _, _) =>
+      environment.define(name.lexeme, new LoxFunction(f, environment))
     case Print(expr) => println(eval(expr).toString)
+    case Return(_, expr) => throw new ReturnException(eval(expr))
     case Var(name, None) => environment.define(name.lexeme, NilVal)
     case Var(name, Some(expr)) => environment.define(name.lexeme, eval(expr))
     case While(condition, body) => while(eval(condition).isTruthy) execute(body)

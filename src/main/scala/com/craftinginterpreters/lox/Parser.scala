@@ -84,6 +84,7 @@ class Parser(tokens: Seq[Token]) {
     else if (matchTokens(IF)) ifStatement()
     else if (matchTokens(FOR)) forStatement()
     else if (matchTokens(PRINT)) printStatement()
+    else if (matchTokens(RETURN)) returnStatement()
     else if (matchTokens(WHILE)) whileStatement()
     else expressionStatement()
 
@@ -145,6 +146,13 @@ class Parser(tokens: Seq[Token]) {
     val expr = expression()
     consume(SEMICOLON, "Expect ';' after value.")
     Print(expr)
+  }
+
+  private def returnStatement(): Stmt = {
+    val keyword = previous
+    val expr = if (!check(SEMICOLON)) expression() else Literal(NilVal)
+    consume(SEMICOLON, "Expect ';' after return value.")
+    Return(keyword, expr)
   }
 
   private def whileStatement(): Stmt = {
