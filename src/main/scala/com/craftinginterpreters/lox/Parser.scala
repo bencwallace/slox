@@ -32,7 +32,8 @@ class Parser(tokens: Seq[Token]) {
 
   private def declaration(): Stmt =
     try {
-      if (matchTokens(VAR)) varDeclaration()
+      if (matchTokens(FUN)) function("function")
+      else if (matchTokens(VAR)) varDeclaration()
       else statement()
     } catch {
       case error: ParseError => {
@@ -40,6 +41,25 @@ class Parser(tokens: Seq[Token]) {
         topLevelParser()
       }
     }
+
+  private def function(kind: String): Stmt = {
+    val name = consume(IDENTIFIER, s"Expect ${kind} name.")
+    consume(LEFT_PAREN, s"Expect '(' after ${kind} name.")
+    val params = ListBuffer[Token]()
+    if (!check(RIGHT_PAREN)) {
+      do {
+        if (params.size >= 255)
+          error(peek, "Canot have more than 255 parameters.")
+        params :+ consume(IDENTIFIER, "Expect parameter name.")
+      } while (matchTokens(COMMA))
+    }
+    consume(RIGHT_PAREN, "Expect ')' after parameters.")
+
+    consume(LEFT_BRACE, s"Expect '{' before ${kind} body.")
+    val body = block()
+
+    Function(name, params.toSeq, body)
+  }
 
   private def varDeclaration(): Stmt = {
     val name = consume(IDENTIFIER, "Expect variable name.")
