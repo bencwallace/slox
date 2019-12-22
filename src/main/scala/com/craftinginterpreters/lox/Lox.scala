@@ -22,7 +22,6 @@ object Lox {
 
   private def run(source: String): Unit =
     if (source == null) sys.exit(66)
-
     else {
       val scanner = new Scanner(source)
       val tokens = scanner.scanTokens()
@@ -42,15 +41,11 @@ object Lox {
       hadRuntimeError = false
     }
 
-  // todo: fix
   private def runFile(path: String): Unit =
     try {
-      val source = Source.fromFile(path)
-      for (line <- source.getLines) {
-        run(line)
-        if (hadError) sys.exit(65)
-        if (hadRuntimeError) sys.exit(70)
-      }
+      run(Source.fromFile(path).mkString)
+      if (hadError) sys.exit(65)
+      if (hadRuntimeError) sys.exit(70)
     } catch {
       case _: FileNotFoundException => println("Source file not found.")
     }
