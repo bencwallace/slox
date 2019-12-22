@@ -77,15 +77,16 @@ class Parser(tokens: Seq[Token]) {
     else if (matchTokens(WHILE)) whileStatement()
     else expressionStatement()
 
-  // todo: not the most elegant implementation
   private def block(): Seq[Stmt] = {
-    val statements = ListBuffer[Stmt]()
-
-    while (!isAtEnd && !check(RIGHT_BRACE))
-      statements :+ declaration()
-
-    consume(RIGHT_BRACE, "Expect '}' after block.")
-    statements.toSeq
+    @tailrec
+    def blockRec(acc: Queue[Stmt]): Queue[Stmt] =
+      if (!isAtEnd && !check(RIGHT_BRACE))
+        blockRec(acc :+ declaration())
+      else {
+        consume(RIGHT_BRACE, "Expect '}' after block.")
+        acc
+      }
+    blockRec(Queue()).toSeq
   }
 
   private def ifStatement(): Stmt = {
@@ -238,6 +239,7 @@ class Parser(tokens: Seq[Token]) {
 
   // utility methods (pure)
 
+
   private def check(tokenType: TokenType): Boolean =
     if (isAtEnd) false else peek.tokenType == tokenType
 
@@ -266,9 +268,8 @@ class Parser(tokens: Seq[Token]) {
 
   private def consume(tokenType: TokenType, message: String): Token =
     if (check(tokenType)) advance()
-    else {
-      throw error(peek, message)
-    }
+//    else null
+    else throw error(peek, message)
 
   // error handling
 
