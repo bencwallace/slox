@@ -35,9 +35,10 @@ Pattern matching also encourage the definition of a `Value` type to represent Lo
 rather than storing these values as `Object`s. This helps avoid typical pitfalls of working
 directly with `Object`.
 
-### Higher-order functions
+### Design notes
 
-Higher-order functions are used as follows:
-
-* `Parser` can be simplified by refactoring the various binary expression parsers.
-
+* Lox values are stored as `Value` objects rather than `Object` objects
+* Lexical scope is implemented by passing the local environment to a new `Interpreter` object
+* The visitor pattern is replaced by pattern matching
+* The `Scanner` and `Parser` are implemented as tail-recursive functions
+* Binary operator parsers are implemented using higher-order functions

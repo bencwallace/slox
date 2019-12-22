@@ -1,7 +1,8 @@
 package com.craftinginterpreters.lox
 
-import scala.io.{Codec, Source, StdIn}
-import scala.util.Using
+import java.io.FileNotFoundException
+
+import scala.io.{Source, StdIn}
 
 object Lox {
 
@@ -43,12 +44,15 @@ object Lox {
 
   // todo: fix
   private def runFile(path: String): Unit =
-    Using(Source.fromFile(path)(Codec.defaultCharsetCodec)) { source =>
-      for (line <- source.getLines()) {
+    try {
+      val source = Source.fromFile(path)
+      for (line <- source.getLines) {
         run(line)
         if (hadError) sys.exit(65)
         if (hadRuntimeError) sys.exit(70)
       }
+    } catch {
+      case _: FileNotFoundException => println("Source file not found.")
     }
 
   // runtime errors

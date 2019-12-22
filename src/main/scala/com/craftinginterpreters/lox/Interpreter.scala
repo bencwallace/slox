@@ -12,9 +12,7 @@ object Interpreter {
 
 }
 
-class Interpreter {
-
-  private var environment = Interpreter.globals
+class Interpreter(var environment: Environment = Interpreter.globals) {
 
   def interpret(statements: Seq[Stmt]): Unit =
     try {
@@ -24,7 +22,8 @@ class Interpreter {
     }
 
   private def execute(statement: Stmt): Unit = statement match {
-    case Block(statements) => executeBlock(statements, new Environment(Some(environment)))
+    case Block(statements) =>
+      (new Interpreter(new Environment(Some(environment)))).executeBlock(statements)
     case Expression(expr) => {
       eval(expr)
       ()
@@ -42,17 +41,8 @@ class Interpreter {
     case End => ???
   }
 
-  // todo: why not just instantiate a new interpreter with `environment`?
-  private def executeBlock(statements: Seq[Stmt], environment: Environment): Unit = {
-    val previous = this.environment
-    try {
-      this.environment = environment
-      for (statement <- statements)
-        execute(statement)
-    } finally {
-      this.environment = previous
-    }
-  }
+  private def executeBlock(statements: Seq[Stmt]): Unit =
+    for (statement <- statements) execute(statement)
 
   private def eval(expr: Expr): Value = expr match {
     case Assign(token, expr) => {

@@ -2,7 +2,6 @@ package com.craftinginterpreters.lox
 
 import scala.annotation.tailrec
 import scala.collection.immutable.Queue
-import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
 class Parser(tokens: Seq[Token]) {
@@ -36,7 +35,7 @@ class Parser(tokens: Seq[Token]) {
       else if (matchTokens(VAR)) varDeclaration()
       else statement()
     } catch {
-      case error: ParseError => {
+      case _: ParseError => {
         synchronize()
         topLevelParser()
       }
@@ -80,10 +79,10 @@ class Parser(tokens: Seq[Token]) {
 
   // todo: not the most elegant implementation
   private def block(): Seq[Stmt] = {
-    val statements = mutable.Queue[Stmt]()
+    val statements = ListBuffer[Stmt]()
 
     while (!isAtEnd && !check(RIGHT_BRACE))
-      statements.enqueue(declaration())
+      statements :+ declaration()
 
     consume(RIGHT_BRACE, "Expect '}' after block.")
     statements.toSeq
