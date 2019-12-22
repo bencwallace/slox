@@ -98,4 +98,6 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
     case _ => ???
   }
 
+  private[lox] def resolve(expr: Expr, n: Int): Unit = ???
+
 }
