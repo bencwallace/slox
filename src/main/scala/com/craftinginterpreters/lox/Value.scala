@@ -5,6 +5,12 @@ sealed trait Value {
   def isTruthy: Boolean = true
 }
 
+abstract case class LoxCallable() extends Value {
+  override def toString: String = "LoxCallable"
+  def arity: Int
+  def call(interpreter: Interpreter, args: Seq[Value]): Value
+}
+
 case class Bool(value: Boolean) extends Value {
   override def toString: String = value.toString
   override def isTruthy: Boolean = value

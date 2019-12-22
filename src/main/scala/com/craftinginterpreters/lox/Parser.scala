@@ -3,6 +3,7 @@ package com.craftinginterpreters.lox
 import scala.annotation.tailrec
 import scala.collection.immutable.Queue
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 class Parser(tokens: Seq[Token]) {
 
@@ -176,7 +177,30 @@ class Parser(tokens: Seq[Token]) {
       val operator = previous
       val right = unary()
       Unary(operator, right)
-    } else primary()
+    } else call()
+
+  private def call(): Expr = {
+    var expr = primary()
+
+    // todo: different from book -- beware extension
+    while (matchTokens(LEFT_PAREN))
+      expr = finishCall(expr)
+
+    expr
+  }
+
+  private def finishCall(callee: Expr): Expr = {
+    val args = new ListBuffer[Expr]()
+    if (!check(RIGHT_PAREN))
+      do {
+        if (args.size >= 255)
+          error(peek, "Cannot have more than 255 arguments.")
+        args += expression()
+      } while (matchTokens(COMMA))
+    val paren = consume(RIGHT_PAREN, "Expect ')' after arguments.")
+
+    Call(callee, paren, args.toSeq)
+  }
 
   private def primary(): Expr =
     if (matchTokens(FALSE)) Literal(Bool(false))
