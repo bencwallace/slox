@@ -84,7 +84,7 @@ class Scanner(val source: String) {
       }
     } else Token(EOF, "", None, line)
 
-  // tokenizers
+  // lexers
 
   private def makeToken(tokenType: TokenType): Token = makeToken(tokenType, None)
 

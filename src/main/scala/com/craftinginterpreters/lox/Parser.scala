@@ -22,7 +22,7 @@ class Parser(tokens: Seq[Token]) {
     parseRec(Queue[Stmt]())
   }
 
-  // todo: update as appropriate
+  // todo: temporary; update as appropriate
   private def topLevelParser(): Stmt =
     if (isAtEnd) End
     else declaration()
@@ -41,7 +41,9 @@ class Parser(tokens: Seq[Token]) {
       }
     }
 
+  // function declaration
   private def function(kind: String): Stmt = {
+    @tailrec
     def paramsRec(acc: ArrayBuffer[Token]): ArrayBuffer[Token] =
       if (matchTokens(COMMA)) {
         if (acc.size >= 255)
@@ -50,15 +52,18 @@ class Parser(tokens: Seq[Token]) {
       }
       else acc
 
+    // parse name
     val name = consume(IDENTIFIER, s"Expect $kind name.")
     consume(LEFT_PAREN, s"Expect '(' after $kind name.")
 
+    // parse parameter names
     val firstParams =
       if (!check(RIGHT_PAREN)) ArrayBuffer(consume(IDENTIFIER, "Expect parameter name."))
       else ArrayBuffer[Token]()
     val params = paramsRec(firstParams)
     consume(RIGHT_PAREN, "Expect ')' after parameters.")
 
+    // parse body
     consume(LEFT_BRACE, s"Expect '{' before $kind body.")
     val body = block()
 
@@ -91,7 +96,7 @@ class Parser(tokens: Seq[Token]) {
         consume(RIGHT_BRACE, "Expect '}' after block.")
         acc
       }
-    blockRec(Queue()).toSeq
+    blockRec(Queue())
   }
 
   private def ifStatement(): Stmt = {
@@ -105,7 +110,9 @@ class Parser(tokens: Seq[Token]) {
     If(condition, thenBranch, elseBranch)
   }
 
+  // desugar for loop to while loop
   private def forStatement(): Stmt = {
+    // parse initializer, condition, and increment
     consume(LEFT_PAREN, "Expect '(' after 'for'.")
     val initializer =
       if (matchTokens(SEMICOLON)) None
@@ -122,6 +129,7 @@ class Parser(tokens: Seq[Token]) {
       else None
     consume(RIGHT_PAREN, "Expect ')', after for clauses.")
 
+    // desugar
     val whileLoop = While(condition, increment match {
       case Some(inc) => Block(Seq(statement(), Expression(inc)))
       case None => Block(Seq(statement()))
@@ -175,6 +183,7 @@ class Parser(tokens: Seq[Token]) {
     } else left
   }
 
+  // template for binary operator expression parsers
   private def binary(tokenTypes: TokenType*)(nextParser: () => Expr): Expr = {
     var expr = nextParser()
     while (matchTokens(tokenTypes:_*)) {
@@ -204,6 +213,7 @@ class Parser(tokens: Seq[Token]) {
       Unary(operator, right)
     } else call()
 
+  // method and function call parsers
   private def call(): Expr = {
     var expr = primary()
 
@@ -214,6 +224,7 @@ class Parser(tokens: Seq[Token]) {
     expr
   }
 
+  // function call parser
   private def finishCall(callee: Expr): Expr = {
     val args = new ListBuffer[Expr]()
     if (!check(RIGHT_PAREN))
@@ -227,6 +238,7 @@ class Parser(tokens: Seq[Token]) {
     Call(callee, paren, args.toSeq)
   }
 
+  // primary (leaf) parser
   private def primary(): Expr =
     if (matchTokens(FALSE)) Literal(Bool(false))
     else if (matchTokens(TRUE)) Literal(Bool(true))
@@ -243,7 +255,6 @@ class Parser(tokens: Seq[Token]) {
     } else throw error(peek, "Expect expression.")
 
   // utility methods (pure)
-
 
   private def check(tokenType: TokenType): Boolean =
     if (isAtEnd) false else peek.tokenType == tokenType
@@ -273,7 +284,6 @@ class Parser(tokens: Seq[Token]) {
 
   private def consume(tokenType: TokenType, message: String): Token =
     if (check(tokenType)) advance()
-//    else null
     else throw error(peek, message)
 
   // error handling
@@ -283,7 +293,6 @@ class Parser(tokens: Seq[Token]) {
     ParseError()
   }
 
-  // todo: fix
   private def synchronize(): Unit = {
     advance()
 
