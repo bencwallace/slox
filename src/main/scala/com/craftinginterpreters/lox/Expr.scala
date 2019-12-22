@@ -29,7 +29,7 @@ case class Grouping(expr: Expr) extends Expr {
 }
 case class Literal(value: Value) extends Expr {
   override def toString: String = value match {
-    case Nil => "nil"
+    case NilVal => "nil"
     case _ => value.toString
   }
 }

@@ -2,7 +2,7 @@ package com.craftinginterpreters.lox
 
 import scala.annotation.tailrec
 import scala.collection.immutable.Queue
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 
 class Parser(tokens: Seq[Token]) {
 
@@ -42,19 +42,24 @@ class Parser(tokens: Seq[Token]) {
     }
 
   private def function(kind: String): Stmt = {
-    val name = consume(IDENTIFIER, s"Expect ${kind} name.")
-    consume(LEFT_PAREN, s"Expect '(' after ${kind} name.")
-    val params = ListBuffer[Token]()
-    if (!check(RIGHT_PAREN)) {
-      do {
-        if (params.size >= 255)
-          error(peek, "Canot have more than 255 parameters.")
-        params :+ consume(IDENTIFIER, "Expect parameter name.")
-      } while (matchTokens(COMMA))
-    }
+    def paramsRec(acc: ArrayBuffer[Token]): ArrayBuffer[Token] =
+      if (matchTokens(COMMA)) {
+        if (acc.size >= 255)
+          error(peek, "Cannot have more than 255 parameters.")
+          paramsRec(acc :+ consume(IDENTIFIER, "Expect parameter name."))
+      }
+      else acc
+
+    val name = consume(IDENTIFIER, s"Expect $kind name.")
+    consume(LEFT_PAREN, s"Expect '(' after $kind name.")
+
+    val firstParams =
+      if (!check(RIGHT_PAREN)) ArrayBuffer(consume(IDENTIFIER, "Expect parameter name."))
+      else ArrayBuffer[Token]()
+    val params = paramsRec(firstParams)
     consume(RIGHT_PAREN, "Expect ')' after parameters.")
 
-    consume(LEFT_BRACE, s"Expect '{' before ${kind} body.")
+    consume(LEFT_BRACE, s"Expect '{' before $kind body.")
     val body = block()
 
     Function(name, params.toSeq, body)
@@ -225,7 +230,7 @@ class Parser(tokens: Seq[Token]) {
   private def primary(): Expr =
     if (matchTokens(FALSE)) Literal(Bool(false))
     else if (matchTokens(TRUE)) Literal(Bool(true))
-    else if (matchTokens(NIL)) Literal(Nil)
+    else if (matchTokens(NIL)) Literal(NilVal)
     else if (matchTokens(NUMBER, STRING)) previous.literal match {
       case Some(value) => Literal(value)
       case None => ???

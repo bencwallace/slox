@@ -2,7 +2,7 @@ package com.craftinginterpreters.lox
 
 object Interpreter {
 
-  private val globals = new Environment()
+  val globals = new Environment()
   globals.define("clock", new LoxCallable {
     override def arity: Int = 0
 
@@ -34,14 +34,16 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
         case Some(s) => execute(s)
         case None => ()
       }
+    case f @ Function(name, params, body) =>
+      environment.define(name.lexeme, new LoxFunction(f))
     case Print(expr) => println(eval(expr).toString)
-    case Var(name, None) => environment.define(name.lexeme, Nil)
+    case Var(name, None) => environment.define(name.lexeme, NilVal)
     case Var(name, Some(expr)) => environment.define(name.lexeme, eval(expr))
     case While(condition, body) => while(eval(condition).isTruthy) execute(body)
     case End => ???
   }
 
-  private def executeBlock(statements: Seq[Stmt]): Unit =
+  private[lox] def executeBlock(statements: Seq[Stmt]): Unit =
     for (statement <- statements) execute(statement)
 
   private def eval(expr: Expr): Value = expr match {
@@ -80,7 +82,7 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
         case f @ LoxCallable() =>
           if (vals.size != f.arity)
             throw new RuntimeError(paren, s"Expected ${f.arity} arguments but got ${args.size}.")
-          else f.call(this, vals)
+          else f. call(this, vals)
         case _ => throw new RuntimeError(paren, "Can only call functions and classes.")
       }
     }
