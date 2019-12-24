@@ -34,7 +34,7 @@ class Scanner(val source: String) {
     def scanTokensRec(acc: Seq[Token]): Seq[Token] = {
       val token = scanToken()
       token match {
-        case Token(EOF, _, _, _) => acc :+ token
+        case Token(EOF, _) => acc :+ token
         case _ => scanTokensRec(acc :+ token)
       }
     }
