@@ -34,7 +34,7 @@ class Scanner(val source: String) {
     def scanTokensRec(acc: Seq[Token]): Seq[Token] = {
       val token = scanToken()
       token match {
-        case Token(EOF, _) => acc :+ token
+        case Token(EOF) => acc :+ token
         case _ => scanTokensRec(acc :+ token)
       }
     }
@@ -80,7 +80,7 @@ class Scanner(val source: String) {
             scanToken()
           }
       }
-    } else Token(EOF, "", None, line)
+    } else Token(EOF, "", line)
 
   // lexers
 
@@ -88,7 +88,7 @@ class Scanner(val source: String) {
 
   private def makeToken(tokenType: TokenType, literal: Option[Value]): Token = {
     val text = source.substring(start, current)
-    Token(tokenType, text, literal, line)
+    Token(tokenType, text, line)
   }
 
   private def identifier(): Token = {

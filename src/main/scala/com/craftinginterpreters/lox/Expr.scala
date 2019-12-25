@@ -2,7 +2,8 @@ package com.craftinginterpreters.lox
 
 sealed trait Expr {
   override def toString: String = this match {
-    case Assign(Token(_, Some(value)), expr) => parenthesize("=", Literal(value), expr)
+    case Assign(t @ Token(NUMBER), expr) => parenthesize("=", Literal(Number(t.lexeme.toDouble)), expr)
+    case Assign(t @ Token(STRING), expr) => parenthesize("=", Literal(Str(t.lexeme)), expr)
     case Binary(left, op, right) => parenthesize(op.lexeme, left, right)
     case Call(callee, _, args) => parenthesize(callee.toString, args:_*)
     case Grouping(expr) => expr.toString
@@ -10,6 +11,7 @@ sealed trait Expr {
     case Literal(value) => value.toString
     case Unary(op, right) => parenthesize(op.lexeme, right)
     case Variable(token) => parenthesize("var", Literal(Str(token.lexeme)))
+    case _ => ???
   }
 
   private def parenthesize(name: String, exprs: Expr*): String = {

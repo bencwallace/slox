@@ -249,10 +249,8 @@ class Parser(tokens: Seq[Token]) {
     if (matchTokens(FALSE)) Literal(Bool(false))
     else if (matchTokens(TRUE)) Literal(Bool(true))
     else if (matchTokens(NIL)) Literal(NilVal)
-    else if (matchTokens(NUMBER, STRING)) previous.literal match {
-      case Some(value) => Literal(value)
-      case None => ???
-    }
+    else if (matchTokens(NUMBER)) Literal(Number(previous.lexeme.toDouble))
+    else if (matchTokens(STRING)) Literal(Str(previous.lexeme))
     else if (matchTokens(IDENTIFIER)) Variable(previous)
     else if (matchTokens(LEFT_PAREN)) {
       val expr = expression()

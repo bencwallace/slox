@@ -51,13 +51,13 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
       val value = eval(expr)
       environment.assign(token, value)
       value
-    case Binary(left, Token(AND, _), right) =>
+    case Binary(left, Token(AND), right) =>
       val l = eval(left)
       if (!l.isTruthy) l else eval(right)
-    case Binary(left, Token(OR, _), right) =>
+    case Binary(left, Token(OR), right) =>
       val l = eval(left)
       if (l.isTruthy) l else eval(right)
-    case Binary(left, token @ Token(t, _), right) =>
+    case Binary(left, token @ Token(t), right) =>
       (eval(left), t, eval(right)) match {
         case (l, EQUAL_EQUAL, r) => Bool(l == r)
         case (l, BANG_EQUAL, r) => Bool(l != r)
@@ -84,11 +84,11 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
       }
     case Grouping(e) => eval(e)
     case Literal(someValue) => someValue
-    case Unary(t @ Token(MINUS, _), right) => eval(right) match {
+    case Unary(t @ Token(MINUS), right) => eval(right) match {
       case Number(x) => Number(-x)
       case _ => throw RuntimeError(t, "Operand must be a number.")
     }
-    case Unary(Token(BANG, _), right) => Bool(eval(right).isTruthy)
+    case Unary(Token(BANG), right) => Bool(eval(right).isTruthy)
     case Variable(token) => environment.get(token)
     case _ => ???
   }
