@@ -28,8 +28,6 @@ sealed trait Expr {
   }
 }
 
-// todo: implement anonymous functions
-
 case class Assign(token: Token, expr: Expr) extends Expr
 case class Binary(left: Expr, operator: Token, right: Expr) extends Expr
 case class Call(callee: Expr, paren: Token, args: Seq[Expr]) extends Expr

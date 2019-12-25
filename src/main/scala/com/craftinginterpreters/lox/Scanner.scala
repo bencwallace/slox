@@ -80,15 +80,13 @@ class Scanner(val source: String) {
             scanToken()
           }
       }
-    } else Token(EOF, "", line)
+    } else new Token(EOF, "", line)
 
   // lexers
 
-  private def makeToken(tokenType: TokenType): Token = makeToken(tokenType, None)
-
-  private def makeToken(tokenType: TokenType, literal: Option[Value]): Token = {
+  private def makeToken(tokenType: TokenType) = {
     val text = source.substring(start, current)
-    Token(tokenType, text, line)
+    new Token(tokenType, text, line)
   }
 
   private def identifier(): Token = {
@@ -111,7 +109,7 @@ class Scanner(val source: String) {
       while (isDigit(peek)) advance()
     }
 
-    makeToken(NUMBER, Some(Number(source.substring(start, current).toDouble)))
+    makeToken(NUMBER)
   }
 
   private def string(): Token = {
@@ -130,7 +128,7 @@ class Scanner(val source: String) {
 
       // trim surrounding quotes
       val value = source.substring(start + 1, current - 1)
-      makeToken(STRING, Some(Str(value)))
+      makeToken(STRING)
     }
   }
 

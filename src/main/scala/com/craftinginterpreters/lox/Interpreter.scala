@@ -43,6 +43,8 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
     case End => ???
   }
 
+  private[lox] def resolve(expr: Expr, n: Int): Unit = ???
+
   private[lox] def executeBlock(statements: Seq[Stmt]): Unit =
     for (statement <- statements) execute(statement)
 
@@ -92,7 +94,5 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
     case Variable(token) => environment.get(token)
     case _ => ???
   }
-
-  private[lox] def resolve(expr: Expr, n: Int): Unit = ???
 
 }
