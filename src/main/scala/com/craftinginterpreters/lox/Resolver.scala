@@ -23,6 +23,11 @@ class Resolver(interpreter: Interpreter) {
       define(name)
       resolveFunction(f)
     // simple cases
+    case Block(statements) => {
+      beginScope()
+      resolve(statements)
+      endScope()
+    }
     case Expression(expr) => resolve(expr)
     case If(condition, thenBranch, elseBranch) =>
       resolve(condition)

@@ -8,7 +8,6 @@ object Lox {
 
   private var hadError = false
   private var hadRuntimeError = false
-  private val interpreter = new Interpreter()
 
   def main(args: Array[String]): Unit =
     if (args.length > 1) {
@@ -30,7 +29,9 @@ object Lox {
       val statements = parser.parse()
 
       if (hadError || hadRuntimeError) println()
-      else interpreter.interpret(statements)
+
+      val interpreter = new Interpreter()
+      interpreter.interpret(statements)
     }
 
   private def runPrompt(): Unit =
