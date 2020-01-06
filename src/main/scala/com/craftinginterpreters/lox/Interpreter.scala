@@ -111,6 +111,11 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
           else f. call(this, vals)
         case _ => throw RuntimeError(paren, "Can only call functions and classes.")
       }
+    case Get(obj, name) =>
+      eval(obj) match {
+        case objVal @ LoxInstance(_) => objVal.get(name)
+        case _ => throw new RuntimeError(name, "Only instances have properties.")
+      }
     case Grouping(e) => eval(e)
     case Literal(someValue) => someValue
     case Unary(t @ Token(MINUS), right) => eval(right) match {

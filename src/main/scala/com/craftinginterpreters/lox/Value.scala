@@ -25,6 +25,17 @@ abstract case class LoxCallable() extends Value {
   def call(interpreter: Interpreter, args: Seq[Value]): Value
 }
 
+case class LoxInstance(klass: LoxClass) extends Value {
+  private val fields = Map[String, Value]()
+
+  override def toString: String = s"${klass.toString} instance"
+
+  def get(name: Token): Value = fields.get(name.lexeme) match {
+    case None => throw new RuntimeError(name, s"Undefined property '${name.lexeme}'.")
+    case Some(v) => v
+  }
+}
+
 case class Bool(value: Boolean) extends Value
 case object NilVal extends Value
 case class Number(value: Double) extends Value

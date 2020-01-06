@@ -238,8 +238,14 @@ class Parser(tokens: Seq[Token]) {
     var expr = primary()
 
     // todo: different from book -- beware extension
-    while (matchTokens(LEFT_PAREN))
-      expr = finishCall(expr)
+    while (matchTokens(LEFT_PAREN, DOT)) {
+      previous match {
+        case Token(LEFT_PAREN) => expr = finishCall(expr)
+        case Token(DOT) =>
+          val name = consume(IDENTIFIER, "Expect property name after '.'.")
+          expr = Get(expr, name)
+      }
+    }
 
     expr
   }

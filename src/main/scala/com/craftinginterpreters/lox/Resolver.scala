@@ -74,6 +74,7 @@ class Resolver(interpreter: Interpreter) {
       resolve(callee)
       for (arg <- args)
         resolve(arg)
+    case Get(obj, _) => resolve(obj)
     case Grouping(expr) => resolve(expr)
     case Literal(_) => ()
     case Unary(_, right) => resolve(right)
