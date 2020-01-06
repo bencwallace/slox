@@ -43,15 +43,20 @@ class Parser(tokens: Seq[Token]) {
 
   private def classDeclaration(): Stmt = {
     val name = consume(IDENTIFIER, "Expect class name.")
-    consume(LEFT_BRACE, "Expect '{' before class body.")
 
+    val superclass =
+      if (matchTokens(LESS)) {
+        consume(IDENTIFIER, "Expect superclass name.")
+        Some(Variable(previous))
+      } else None
+
+    consume(LEFT_BRACE, "Expect '{' before class body.")
     val methods = ArrayBuffer[Function]()
     while (!check(RIGHT_BRACE) && !isAtEnd)
       methods += function("method")
-
     consume(RIGHT_BRACE, "Expect '}' after class body.")
 
-    Class(name, methods.toSeq)
+    Class(name, superclass, methods.toSeq)
   }
 
   // function declaration

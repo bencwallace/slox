@@ -39,11 +39,18 @@ class Resolver(interpreter: Interpreter) {
       beginScope()
       resolve(statements)
       endScope()
-    case Class(name, methods) =>
+    case Class(name, superclass, methods) =>
       val enclosingClass = currentClass
       currentClass = CLASS
       declare(name)
       define(name)
+      superclass match {
+        case None => ()
+        case Some(s @ Variable(n)) =>
+          if (name.lexeme.equals(n.lexeme))
+            Lox.error(n, "A class cannot inherit from itself.")
+          else resolve(s)
+      }
       beginScope()
       scopes.top += ("this" -> true)
       for (method <- methods) {

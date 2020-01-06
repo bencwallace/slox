@@ -57,7 +57,11 @@ class LoxFunction(declaration: Function,
   }
 }
 
-class LoxClass(name: String, methods: Map[String, LoxFunction]) extends LoxCallable {
+object LoxClass {
+  def unapply(loxClass: LoxClass): Boolean = true
+}
+
+class LoxClass(name: String, superclass: LoxClass, methods: Map[String, LoxFunction]) extends LoxCallable {
   override def toString: String = name
 
   override def arity: Int = findMethod("init") match {
