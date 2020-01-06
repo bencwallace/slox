@@ -9,8 +9,13 @@ class Resolver(interpreter: Interpreter) {
   private case object FUNCTION extends FunctionType
   private case object METHOD extends FunctionType
 
+  private sealed trait ClassType
+  private case object NOCLASS extends ClassType
+  private case object CLASS extends ClassType
+
   private val scopes = mutable.Stack[mutable.Map[String, Boolean]]()
   private var currentFunction: FunctionType = NONE
+  private var currentClass: ClassType = NOCLASS
 
   def resolve(statements: Seq[Stmt]): Unit =
     for (statement <- statements)
@@ -34,6 +39,8 @@ class Resolver(interpreter: Interpreter) {
       resolve(statements)
       endScope()
     case Class(name, methods) =>
+      val enclosingClass = currentClass
+      currentClass = CLASS
       declare(name)
       define(name)
       beginScope()
@@ -43,6 +50,7 @@ class Resolver(interpreter: Interpreter) {
         resolveFunction(method, declaration)
       }
       endScope()
+      currentClass = enclosingClass
     case Expression(expr) => resolve(expr)
     case If(condition, thenBranch, elseBranch) =>
       resolve(condition)
@@ -88,7 +96,10 @@ class Resolver(interpreter: Interpreter) {
     case Set(obj, _, value) =>
       resolve(value)
       resolve(obj)
-    case This(keyword) => resolveLocal(expr, keyword)
+    case This(keyword) => currentClass match {
+      case NOCLASS => Lox.error(keyword, "Cannot use 'this' outside of a class.")
+      case _ => resolveLocal(expr, keyword)
+    }
     case Unary(_, right) => resolve(right)
   }
 
