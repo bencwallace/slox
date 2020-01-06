@@ -3,6 +3,7 @@ package com.craftinginterpreters.lox
 sealed trait Stmt
 
 case class Block(statements: Seq[Stmt]) extends Stmt
+case class Class(name: Token, methods: Seq[Function]) extends Stmt
 case class Expression(expr: Expr) extends Stmt
 case class If(condition: Expr, thenBranch: Stmt, elseBranch: Option[Stmt]) extends Stmt
 case class Function(name: Token, params: Seq[Token], body: Seq[Stmt]) extends Stmt

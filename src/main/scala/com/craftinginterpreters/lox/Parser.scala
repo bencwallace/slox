@@ -31,7 +31,8 @@ class Parser(tokens: Seq[Token]) {
 
   private def declaration(): Stmt =
     try {
-      if (matchTokens(FUN)) function("function")
+      if (matchTokens(CLASS)) classDeclaration()
+      else if (matchTokens(FUN)) function("function")
       else if (matchTokens(VAR)) varDeclaration()
       else statement()
     } catch {
@@ -40,8 +41,21 @@ class Parser(tokens: Seq[Token]) {
         topLevelParser()
     }
 
+  private def classDeclaration(): Stmt = {
+    val name = consume(IDENTIFIER, "Expect class name.")
+    consume(LEFT_BRACE, "Expect '{' before class body.")
+
+    val methods = ArrayBuffer[Function]()
+    while (!check(RIGHT_BRACE) && !isAtEnd)
+      methods += function("method")
+
+    consume(RIGHT_BRACE, "Expect '}' after class body.")
+
+    Class(name, methods.toSeq)
+  }
+
   // function declaration
-  private def function(kind: String): Stmt = {
+  private def function(kind: String): Function = {
     @tailrec
     def paramsRec(acc: ArrayBuffer[Token]): ArrayBuffer[Token] =
       if (matchTokens(COMMA)) {

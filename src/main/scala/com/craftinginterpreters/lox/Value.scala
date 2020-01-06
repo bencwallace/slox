@@ -9,7 +9,7 @@ sealed trait Value {
   }
 
   override def toString: String = this match {
-    case LoxCallable => "LoxCallable"
+    case LoxCallable() => "LoxCallable"
     case Bool(value) => value.toString
     case NilVal => "nil"
     case Number(value) =>

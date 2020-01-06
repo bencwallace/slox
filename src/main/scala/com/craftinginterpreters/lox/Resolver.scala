@@ -32,6 +32,9 @@ class Resolver(interpreter: Interpreter) {
       beginScope()
       resolve(statements)
       endScope()
+    case Class(name, _) =>
+      declare(name)
+      define(name)
     case Expression(expr) => resolve(expr)
     case If(condition, thenBranch, elseBranch) =>
       resolve(condition)

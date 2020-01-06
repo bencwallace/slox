@@ -29,6 +29,10 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
     case Block(statements) =>
       executeBlock(statements, new Environment(Some(environment)))
 //      new Interpreter(new Environment(Some(environment))).executeBlock(statements)
+    case Class(name, methods) =>
+      environment.define(name.lexeme, NilVal)
+      val klass = new LoxClass(name.lexeme)
+      environment.assign(name, klass)
     case Expression(expr) =>
       eval(expr)
       ()
