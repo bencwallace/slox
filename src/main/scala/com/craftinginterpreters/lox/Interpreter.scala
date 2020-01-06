@@ -33,7 +33,7 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
       environment.define(name.lexeme, NilVal)
       val ms = mutable.Map[String, LoxFunction]()
       for (method <- methods) {
-        val function = new LoxFunction(method, environment)
+        val function = new LoxFunction(method, environment, method.name.lexeme.equals("init"))
         ms += (method.name.lexeme -> function)
       }
       val klass = new LoxClass(name.lexeme, ms.toMap)

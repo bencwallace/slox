@@ -12,6 +12,7 @@ sealed trait Value {
 
   override def toString: String = this match {
     case LoxCallable() => "LoxCallable"
+    case LoxInstance(klass) => s"<${klass.toString} instance>"
     case Bool(value) => value.toString
     case NilVal => "nil"
     case Number(value) =>
@@ -27,7 +28,9 @@ abstract case class LoxCallable() extends Value {
   def call(interpreter: Interpreter, args: Seq[Value]): Value
 }
 
-class LoxFunction(declaration: Function, closure: Environment) extends LoxCallable {
+class LoxFunction(declaration: Function,
+                  closure: Environment,
+                  isInitializer: Boolean = false) extends LoxCallable {
   override def arity: Int = declaration.params.size
 
   override def call(interpreter: Interpreter, args: Seq[Value]): Value = {
@@ -36,10 +39,11 @@ class LoxFunction(declaration: Function, closure: Environment) extends LoxCallab
     for ((param, i) <- declaration.params.zipWithIndex)
       environment.define(param.lexeme, args(i))
     try {
-      //      new Interpreter(environment).executeBlock(declaration.body)
       interpreter.executeBlock(declaration.body, environment)
     } catch {
-      case ReturnException(value) => return value
+      case ReturnException(value) =>
+        if (isInitializer) closure.getAt(0, "this")
+        return value
     }
     NilVal
   }
@@ -49,25 +53,32 @@ class LoxFunction(declaration: Function, closure: Environment) extends LoxCallab
   def bind(instance: LoxInstance): LoxFunction = {
     val environment = new Environment(Some(closure))
     environment.define("this", instance)
-    new LoxFunction(declaration, environment)
+    new LoxFunction(declaration, environment, isInitializer)
   }
 }
 
 class LoxClass(name: String, methods: Map[String, LoxFunction]) extends LoxCallable {
   override def toString: String = name
 
-  override def arity: Int = 0
+  override def arity: Int = findMethod("init") match {
+    case None => 0
+    case Some(f) => f.arity
+  }
 
-  override def call(interpreter: Interpreter, args: Seq[Value]): Value =
-    new LoxInstance(this)
+  override def call(interpreter: Interpreter, args: Seq[Value]): Value = {
+    val instance = new LoxInstance(this)
+    findMethod("init") match {
+      case Some(f) => f.bind(instance).call(interpreter, args)
+      case None => ()
+    }
+    instance
+  }
 
   def findMethod(name: String): Option[LoxFunction] = methods.get(name)
 }
 
 case class LoxInstance(klass: LoxClass) extends Value {
   private val fields = mutable.Map[String, Value]()
-
-  override def toString: String = s"${klass.toString} instance"
 
   def get(name: Token): Value = fields.get(name.lexeme) match {
     case Some(v) => v

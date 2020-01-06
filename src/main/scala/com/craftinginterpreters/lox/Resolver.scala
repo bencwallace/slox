@@ -7,6 +7,7 @@ class Resolver(interpreter: Interpreter) {
   private sealed trait FunctionType
   private case object NONE extends FunctionType
   private case object FUNCTION extends FunctionType
+  private case object INITIALIZER extends FunctionType
   private case object METHOD extends FunctionType
 
   private sealed trait ClassType
@@ -46,7 +47,7 @@ class Resolver(interpreter: Interpreter) {
       beginScope()
       scopes.top += ("this" -> true)
       for (method <- methods) {
-        val declaration = METHOD
+        val declaration = if (method.name.lexeme.equals("init")) INITIALIZER else METHOD
         resolveFunction(method, declaration)
       }
       endScope()
@@ -60,16 +61,17 @@ class Resolver(interpreter: Interpreter) {
         case Some(branch) => resolve(branch)
       }
     case Print(expr) => resolve(expr)
-    case Return(keyword, expr) => {
+    case Return(keyword, expr) =>
       currentFunction match {
         case NONE => Lox.error(keyword, "Cannot return from top-level code.")
+        case INITIALIZER => Lox.error(keyword, "Cannot return a value from an initializer.")
         case _ => ()
       }
       resolve(expr)
-    }
     case While(condition, body) =>
       resolve(condition)
       resolve(body)
+    case End => ()
   }
 
   private def resolve(expr: Expr): Unit = expr match {
