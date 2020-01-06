@@ -84,16 +84,6 @@ class Resolver(interpreter: Interpreter) {
         return
       }
 
-  private def resolveFunction(function: Function): Unit = {
-    beginScope()
-    for (param <- function.params) {
-      declare(param)
-      define(param)
-    }
-    resolve(function.body)
-    endScope()
-  }
-
   private def resolveFunction(function: Function, functionType: FunctionType): Unit = {
     val enclosingFunction = currentFunction
     currentFunction = functionType
