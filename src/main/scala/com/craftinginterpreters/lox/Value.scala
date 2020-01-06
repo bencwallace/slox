@@ -42,10 +42,11 @@ class LoxFunction(declaration: Function,
       interpreter.executeBlock(declaration.body, environment)
     } catch {
       case ReturnException(value) =>
-        if (isInitializer) closure.getAt(0, "this")
-        return value
+        if (isInitializer) return closure.getAt(0, "this")
+        else return value
     }
-    NilVal
+    if (isInitializer) closure.getAt(0, "this")
+    else NilVal
   }
 
   override def toString: String = s"<fn ${declaration.name.lexeme}>"

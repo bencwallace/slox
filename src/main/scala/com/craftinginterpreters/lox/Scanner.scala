@@ -85,7 +85,10 @@ class Scanner(val source: String) {
   // lexers
 
   private def makeToken(tokenType: TokenType) = {
-    val text = source.substring(start, current)
+    val text = tokenType match {
+      case STRING => source.substring(start + 1, current - 1)
+      case _ => source.substring(start, current)
+    }
     new Token(tokenType, text, line)
   }
 

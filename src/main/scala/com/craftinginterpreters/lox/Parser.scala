@@ -148,16 +148,17 @@ class Parser(tokens: Seq[Token]) {
       else None
     consume(RIGHT_PAREN, "Expect ')', after for clauses.")
 
-    // desugar
-    val whileLoop = While(condition, increment match {
-      case Some(inc) => Block(Seq(statement(), Expression(inc)))
-      case None => Block(Seq(statement()))
-    })
-
-    Block(initializer match {
-      case Some(init) => Seq(init, whileLoop)
-      case None => Seq(whileLoop)
-    })
+    var body = statement()
+    body = increment match {
+      case Some(inc) => Block(Seq(body, Expression(inc)))
+      case None => body
+    }
+    body = While(condition, body)
+    body = initializer match {
+      case Some(init) => Block(Seq(init, body))
+      case None => body
+    }
+    body
   }
 
   private def printStatement(): Stmt = {

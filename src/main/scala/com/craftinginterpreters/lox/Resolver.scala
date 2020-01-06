@@ -50,12 +50,10 @@ class Resolver(interpreter: Interpreter) {
         case Some(s @ Variable(n)) =>
           if (name.lexeme.equals(n.lexeme))
             Lox.error(n, "A class cannot inherit from itself.")
-          else {
-            currentClass = SUBCLASS
-            resolve(s)
-            beginScope()
-            scopes.top += ("super" -> true)
-          }
+          currentClass = SUBCLASS
+          resolve(s)
+          beginScope()
+          scopes.top += ("super" -> true)
       }
       beginScope()
       scopes.top += ("this" -> true)
@@ -80,8 +78,10 @@ class Resolver(interpreter: Interpreter) {
     case Print(expr) => resolve(expr)
     case Return(keyword, expr) =>
       currentFunction match {
-        case NONE => Lox.error(keyword, "Cannot return from top-level code.")
-        case INITIALIZER => Lox.error(keyword, "Cannot return a value from an initializer.")
+        case NONE =>
+          Lox.error(keyword, "Cannot return from top-level code.")
+        case INITIALIZER if expr != Literal(NilVal) =>
+          Lox.error(keyword, "Cannot return a value from an initializer.")
         case _ => ()
       }
       resolve(expr)

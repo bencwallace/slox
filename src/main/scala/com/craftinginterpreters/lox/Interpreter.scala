@@ -63,7 +63,7 @@ class Interpreter() {
       }
     case f @ Function(name, _, _) =>
       environment.define(name.lexeme, new LoxFunction(f, environment))
-    case Print(expr) => println(eval(expr).toString)
+    case Print(expr) => println(eval(expr))
     case Return(_, expr) => throw ReturnException(eval(expr))
     case Var(name, None) => environment.define(name.lexeme, NilVal)
     case Var(name, Some(expr)) => environment.define(name.lexeme, eval(expr))
@@ -87,14 +87,13 @@ class Interpreter() {
   }
 
   private def eval(expr: Expr): Value = expr match {
-    case Assign(token, expr) =>
-      val value = eval(expr)
+    case Assign(token, right) =>
+      val value = eval(right)
       locals.get(expr) match {
         case None => Interpreter.globals.assign(token, value)
         case Some(d) => environment.assignAt(d, token, value)
       }
       value
-
     case Binary(left, Token(AND), right) =>
       val l = eval(left)
       if (!l.isTruthy) l else eval(right)
@@ -159,7 +158,7 @@ class Interpreter() {
       case Number(x) => Number(-x)
       case _ => throw RuntimeError(t, "Operand must be a number.")
     }
-    case Unary(Token(BANG), right) => Bool(eval(right).isTruthy)
+    case Unary(Token(BANG), right) => Bool(!eval(right).isTruthy)
     case Variable(token) => lookUpVariable(token, expr)
     case _ => ???
   }
