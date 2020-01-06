@@ -27,6 +27,43 @@ abstract case class LoxCallable() extends Value {
   def call(interpreter: Interpreter, args: Seq[Value]): Value
 }
 
+class LoxFunction(declaration: Function, closure: Environment) extends LoxCallable {
+  override def arity: Int = declaration.params.size
+
+  override def call(interpreter: Interpreter, args: Seq[Value]): Value = {
+    val environment = new Environment(Some(closure))
+
+    for ((param, i) <- declaration.params.zipWithIndex)
+      environment.define(param.lexeme, args(i))
+    try {
+      //      new Interpreter(environment).executeBlock(declaration.body)
+      interpreter.executeBlock(declaration.body, environment)
+    } catch {
+      case ReturnException(value) => return value
+    }
+    NilVal
+  }
+
+  override def toString: String = s"<fn ${declaration.name.lexeme}>"
+
+  def bind(instance: LoxInstance): LoxFunction = {
+    val environment = new Environment(Some(closure))
+    environment.define("this", instance)
+    new LoxFunction(declaration, environment)
+  }
+}
+
+class LoxClass(name: String, methods: Map[String, LoxFunction]) extends LoxCallable {
+  override def toString: String = name
+
+  override def arity: Int = 0
+
+  override def call(interpreter: Interpreter, args: Seq[Value]): Value =
+    new LoxInstance(this)
+
+  def findMethod(name: String): Option[LoxFunction] = methods.get(name)
+}
+
 case class LoxInstance(klass: LoxClass) extends Value {
   private val fields = mutable.Map[String, Value]()
 
