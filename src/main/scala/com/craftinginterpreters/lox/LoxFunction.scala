@@ -9,7 +9,8 @@ class LoxFunction(declaration: Function, closure: Environment) extends LoxCallab
     for ((param, i) <- declaration.params.zipWithIndex)
       environment.define(param.lexeme, args(i))
     try {
-      new Interpreter(environment).executeBlock(declaration.body)
+//      new Interpreter(environment).executeBlock(declaration.body)
+      interpreter.executeBlock(declaration.body, environment)
     } catch {
       case ReturnException(value) => return value
     }

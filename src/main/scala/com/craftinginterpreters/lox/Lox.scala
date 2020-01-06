@@ -31,6 +31,10 @@ object Lox {
       if (hadError || hadRuntimeError) println()
 
       val interpreter = new Interpreter()
+
+      val resolver = new Resolver(interpreter)
+      resolver.resolve(statements)
+
       interpreter.interpret(statements)
     }
 

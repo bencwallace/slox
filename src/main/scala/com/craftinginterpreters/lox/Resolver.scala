@@ -1,10 +1,10 @@
 package com.craftinginterpreters.lox
 
-import scala.collection.mutable.{Map,Stack}
+import scala.collection.mutable
 
 class Resolver(interpreter: Interpreter) {
 
-  private val scopes = Stack[Map[String, Boolean]]()
+  private val scopes = mutable.Stack[mutable.Map[String, Boolean]]()
 
   def resolve(statements: Seq[Stmt]): Unit =
     for (statement <- statements)
@@ -23,11 +23,10 @@ class Resolver(interpreter: Interpreter) {
       define(name)
       resolveFunction(f)
     // simple cases
-    case Block(statements) => {
+    case Block(statements) =>
       beginScope()
       resolve(statements)
       endScope()
-    }
     case Expression(expr) => resolve(expr)
     case If(condition, thenBranch, elseBranch) =>
       resolve(condition)
@@ -45,8 +44,10 @@ class Resolver(interpreter: Interpreter) {
 
   private def resolve(expr: Expr): Unit = expr match {
     case Variable(name) =>
-      if (!scopes.isEmpty && scopes.top(name.lexeme) == false)
-        Lox.error(name, "Cannot read local variable in its own initializer.")
+      if (scopes.nonEmpty) scopes.top.get(name.lexeme) match {
+        case Some(false) => Lox.error(name, "Cannot read local variable in its own initializer.")
+        case _ => ()
+      }
       resolveLocal(expr, name)
     case Assign(name, expr) =>
       resolve(expr)
@@ -67,7 +68,8 @@ class Resolver(interpreter: Interpreter) {
   private def resolveLocal(expr: Expr, name: Token): Unit =
     for ((scope, i) <- scopes.zipWithIndex)
       if (scope.contains(name.lexeme)) {
-        interpreter.resolve(expr, scopes.size - 1 - i)
+//        interpreter.resolve(expr, scopes.size - 1 - i)
+        interpreter.resolve(expr, i)
         return
       }
 
@@ -81,18 +83,25 @@ class Resolver(interpreter: Interpreter) {
     endScope()
   }
 
-  // todo: resolving other syntax tree nodes
-
   private def declare(name: Token): Unit =
-    if (scopes.isEmpty) return
-    else scopes.top += (name.lexeme -> false)
+    if (scopes.isEmpty) ()
+    else if (scopes.top.contains(name.lexeme))
+      Lox.error(name, "Variable with this name already declared in this scope.")
+    else
+      scopes.top += (name.lexeme -> false)
 
   private def define(name: Token): Unit =
-    if (scopes.isEmpty) return
+    if (scopes.isEmpty) ()
     else scopes.top += (name.lexeme -> true)
 
-  private def beginScope(): Unit = scopes.push(Map())
+  private def beginScope(): Unit = {
+    scopes.push(mutable.Map())
+    ()
+  }
 
-  private def endScope(): Unit = scopes.pop()
+  private def endScope(): Unit = {
+    scopes.pop()
+    ()
+  }
 
 }

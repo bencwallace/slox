@@ -1,5 +1,7 @@
 package com.craftinginterpreters.lox
 
+import scala.collection.mutable
+
 object Interpreter {
 
   val globals = new Environment()
@@ -14,6 +16,8 @@ object Interpreter {
 
 class Interpreter(var environment: Environment = Interpreter.globals) {
 
+  private val locals = mutable.Map[Expr, Int]()
+
   def interpret(statements: Seq[Stmt]): Unit =
     try {
       for (statement <- statements) execute(statement)
@@ -23,7 +27,8 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
 
   private def execute(statement: Stmt): Unit = statement match {
     case Block(statements) =>
-      new Interpreter(new Environment(Some(environment))).executeBlock(statements)
+      executeBlock(statements, new Environment(Some(environment)))
+//      new Interpreter(new Environment(Some(environment))).executeBlock(statements)
     case Expression(expr) =>
       eval(expr)
       ()
@@ -43,16 +48,34 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
     case End => ???
   }
 
-  private[lox] def resolve(expr: Expr, n: Int): Unit = ???
+  private[lox] def resolve(expr: Expr, depth: Int): Unit =
+    locals += (expr -> depth)
 
-  private[lox] def executeBlock(statements: Seq[Stmt]): Unit =
-    for (statement <- statements) execute(statement)
+
+  //  private[lox] def executeBlock(statements: Seq[Stmt]): Unit =
+  //    for (statement <- statements) execute(statement)
+
+  private[lox] def executeBlock(statements: Seq[Stmt], environment: Environment): Unit = {
+    val previous = this.environment
+    try {
+      this.environment = environment
+      for (statement <- statements)
+        execute(statement)
+    } finally {
+      this.environment = previous
+    }
+  }
 
   private def eval(expr: Expr): Value = expr match {
     case Assign(token, expr) =>
       val value = eval(expr)
-      environment.assign(token, value)
+//      environment.assign(token, value)
+      locals.get(expr) match {
+        case None => Interpreter.globals.assign(token, value)
+        case Some(d) => environment.assignAt(d, token, value)
+      }
       value
+
     case Binary(left, Token(AND), right) =>
       val l = eval(left)
       if (!l.isTruthy) l else eval(right)
@@ -91,8 +114,14 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
       case _ => throw RuntimeError(t, "Operand must be a number.")
     }
     case Unary(Token(BANG), right) => Bool(eval(right).isTruthy)
-    case Variable(token) => environment.get(token)
+//    case Variable(token) => environment.get(token)
+    case Variable(token) => lookUpVariable(token, expr)
     case _ => ???
+  }
+
+  private def lookUpVariable(token: Token, expr: Expr): Value = locals.get(expr) match {
+    case None => Interpreter.globals.get(token)
+    case Some(d) => environment.getAt(d, token.lexeme)
   }
 
 }
