@@ -1,5 +1,7 @@
 package com.craftinginterpreters.lox
 
+import scala.collection.mutable
+
 // double, boolean, nil, string
 sealed trait Value {
   def isTruthy: Boolean = this match {
@@ -26,7 +28,7 @@ abstract case class LoxCallable() extends Value {
 }
 
 case class LoxInstance(klass: LoxClass) extends Value {
-  private val fields = Map[String, Value]()
+  private val fields = mutable.Map[String, Value]()
 
   override def toString: String = s"${klass.toString} instance"
 
@@ -34,6 +36,8 @@ case class LoxInstance(klass: LoxClass) extends Value {
     case None => throw new RuntimeError(name, s"Undefined property '${name.lexeme}'.")
     case Some(v) => v
   }
+
+  def set(name: Token, value: Value): Unit = fields += (name.lexeme -> value)
 }
 
 case class Bool(value: Boolean) extends Value

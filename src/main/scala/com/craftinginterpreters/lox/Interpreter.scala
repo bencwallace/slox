@@ -118,6 +118,13 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
       }
     case Grouping(e) => eval(e)
     case Literal(someValue) => someValue
+    case Set(obj, name, value) => eval(obj) match {
+      case objVal @ LoxInstance(_) =>
+        val v = eval(value)
+        objVal.set(name, v)
+        v
+      case _ => throw new RuntimeError(name, "Only instances have fields.")
+    }
     case Unary(t @ Token(MINUS), right) => eval(right) match {
       case Number(x) => Number(-x)
       case _ => throw RuntimeError(t, "Operand must be a number.")

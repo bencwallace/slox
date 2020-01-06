@@ -34,5 +34,6 @@ case class Call(callee: Expr, paren: Token, args: Seq[Expr]) extends Expr
 case class Get(obj: Expr, name: Token) extends Expr
 case class Grouping(expr: Expr) extends Expr
 case class Literal(value: Value) extends Expr
+case class Set(obj: Expr, name: Token, value: Expr) extends Expr
 case class Unary(operator: Token, right: Expr) extends Expr
 case class Variable(token: Token) extends Expr

@@ -196,6 +196,7 @@ class Parser(tokens: Seq[Token]) {
 
       left match {
         case Variable(token) => Assign(token, right)
+        case Get(obj, name) => Set(obj, name, right)
         case _ =>
           error(equals, "Invalid assignment target.")
           left

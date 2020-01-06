@@ -77,6 +77,9 @@ class Resolver(interpreter: Interpreter) {
     case Get(obj, _) => resolve(obj)
     case Grouping(expr) => resolve(expr)
     case Literal(_) => ()
+    case Set(obj, _, value) =>
+      resolve(value)
+      resolve(obj)
     case Unary(_, right) => resolve(right)
   }
 
