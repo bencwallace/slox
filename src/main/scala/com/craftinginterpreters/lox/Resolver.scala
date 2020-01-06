@@ -4,7 +4,12 @@ import scala.collection.mutable
 
 class Resolver(interpreter: Interpreter) {
 
+  private sealed trait FunctionType
+  private case object NONE extends FunctionType
+  private case object FUNCTION extends FunctionType
+
   private val scopes = mutable.Stack[mutable.Map[String, Boolean]]()
+  private var currentFunction: FunctionType = NONE
 
   def resolve(statements: Seq[Stmt]): Unit =
     for (statement <- statements)
@@ -21,7 +26,7 @@ class Resolver(interpreter: Interpreter) {
     case f @ Function(name, _, _) =>
       declare(name)
       define(name)
-      resolveFunction(f)
+      resolveFunction(f, FUNCTION)
     // simple cases
     case Block(statements) =>
       beginScope()
@@ -36,7 +41,13 @@ class Resolver(interpreter: Interpreter) {
         case Some(branch) => resolve(branch)
       }
     case Print(expr) => resolve(expr)
-    case Return(_, expr) => resolve(expr)
+    case Return(keyword, expr) => {
+      currentFunction match {
+        case NONE => Lox.error(keyword, "Cannot return from top-level code.")
+        case _ => ()
+      }
+      resolve(expr)
+    }
     case While(condition, body) =>
       resolve(condition)
       resolve(body)
@@ -81,6 +92,19 @@ class Resolver(interpreter: Interpreter) {
     }
     resolve(function.body)
     endScope()
+  }
+
+  private def resolveFunction(function: Function, functionType: FunctionType): Unit = {
+    val enclosingFunction = currentFunction
+    currentFunction = functionType
+    beginScope()
+    for (param <- function.params) {
+      declare(param)
+      define(param)
+    }
+    resolve(function.body)
+    endScope()
+    currentFunction = enclosingFunction
   }
 
   private def declare(name: Token): Unit =
