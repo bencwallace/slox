@@ -13,6 +13,7 @@ class Resolver(interpreter: Interpreter) {
   private sealed trait ClassType
   private case object NOCLASS extends ClassType
   private case object CLASS extends ClassType
+  private case object SUBCLASS extends ClassType
 
   private val scopes = mutable.Stack[mutable.Map[String, Boolean]]()
   private var currentFunction: FunctionType = NONE
@@ -49,7 +50,12 @@ class Resolver(interpreter: Interpreter) {
         case Some(s @ Variable(n)) =>
           if (name.lexeme.equals(n.lexeme))
             Lox.error(n, "A class cannot inherit from itself.")
-          else resolve(s)
+          else {
+            currentClass = SUBCLASS
+            resolve(s)
+            beginScope()
+            scopes.top += ("super" -> true)
+          }
       }
       beginScope()
       scopes.top += ("this" -> true)
@@ -58,6 +64,10 @@ class Resolver(interpreter: Interpreter) {
         resolveFunction(method, declaration)
       }
       endScope()
+      superclass match {
+        case None => ()
+        case Some(_) => endScope()
+      }
       currentClass = enclosingClass
     case Expression(expr) => resolve(expr)
     case If(condition, thenBranch, elseBranch) =>
@@ -105,6 +115,14 @@ class Resolver(interpreter: Interpreter) {
     case Set(obj, _, value) =>
       resolve(value)
       resolve(obj)
+    case Super(keyword, _) => {
+      currentClass match {
+        case NOCLASS => Lox.error(keyword, "Cannot use 'super' outside of a class.")
+        case SUBCLASS => ()
+        case _ => Lox.error(keyword, "Cannot use 'super' in a class with no superclass.")
+      }
+      resolveLocal(expr, keyword)
+    }
     case This(keyword) => currentClass match {
       case NOCLASS => Lox.error(keyword, "Cannot use 'this' outside of a class.")
       case _ => resolveLocal(expr, keyword)

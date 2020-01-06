@@ -277,6 +277,12 @@ class Parser(tokens: Seq[Token]) {
     else if (matchTokens(NIL)) Literal(NilVal)
     else if (matchTokens(NUMBER)) Literal(Number(previous.lexeme.toDouble))
     else if (matchTokens(STRING)) Literal(Str(previous.lexeme))
+    else if (matchTokens(SUPER)) {
+      val keyword = previous
+      consume(DOT, "Expect '.' after 'super'.")
+      val method = consume(IDENTIFIER, "Expect superclass method name.")
+      Super(keyword, method)
+    }
     else if (matchTokens(THIS)) This(previous)
     else if (matchTokens(IDENTIFIER)) Variable(previous)
     else if (matchTokens(LEFT_PAREN)) {

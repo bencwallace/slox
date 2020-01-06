@@ -37,10 +37,20 @@ class Interpreter() {
         }
       }
       environment.define(name.lexeme, NilVal)
+      sClass match {
+        case None => ()
+        case Some(s) =>
+          environment = new Environment(Some(environment))
+          environment.define("super", s)
+      }
       val ms =
         for (method <- methods)
           yield method.name.lexeme -> new LoxFunction(method, environment, method.name.lexeme.equals("init"))
       val klass = new LoxClass(name.lexeme, sClass, ms.toMap)
+      (superclass, environment.enclosing) match {
+        case (None, _) => ()
+        case (Some(_), Some(e)) => environment = e
+      }
       environment.assign(name, klass)
     case Expression(expr) =>
       eval(expr)
@@ -129,6 +139,20 @@ class Interpreter() {
         objVal.set(name, v)
         v
       case _ => throw new RuntimeError(name, "Only instances have fields.")
+    }
+    case Super(_, method) => {
+      val (superclass, obj) = locals.get(expr) match {
+        case None => ???
+        case Some(d) => (environment.getAt(d, "super"), environment.getAt(d - 1, "this"))
+      }
+      val m = superclass match {
+        case (lc @ LoxClass()) => lc.findMethod(method.lexeme)
+        case _ => ???
+      }
+      (m, obj) match {
+        case (None, _) => throw RuntimeError(method, s"Undefined property '${method.lexeme}'.'")
+        case (Some(loxFunction), instance @ LoxInstance(_)) => loxFunction.bind(instance)
+      }
     }
     case This(keyword) => lookUpVariable(keyword, expr)
     case Unary(t @ Token(MINUS), right) => eval(right) match {

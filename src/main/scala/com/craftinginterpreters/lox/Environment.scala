@@ -2,7 +2,7 @@ package com.craftinginterpreters.lox
 
 import scala.collection.mutable.Map
 
-class Environment(enclosing: Option[Environment] = None) {
+class Environment(val enclosing: Option[Environment] = None) {
   private val values = Map[String, Value]()
 
   def assign(token: Token, value: Value): Unit = (values.get(token.lexeme), enclosing) match {

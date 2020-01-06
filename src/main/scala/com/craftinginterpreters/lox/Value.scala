@@ -93,11 +93,13 @@ case class LoxInstance(klass: LoxClass) extends Value {
     case None => klass.findMethod(name.lexeme) match {
       case Some(m) => m.bind(this)
       case None =>
-        throw new RuntimeError(name, s"Undefined property '${name.lexeme}'.")
+        throw RuntimeError(name, s"Undefined property '${name.lexeme}'.")
     }
   }
 
-  def set(name: Token, value: Value): Unit = fields += (name.lexeme -> value)
+  def set(name: Token, value: Value): Unit = {
+    fields += (name.lexeme -> value)
+  }
 }
 
 case class Bool(value: Boolean) extends Value
