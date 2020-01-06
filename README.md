@@ -1,12 +1,10 @@
 # slox
 
-**!Work in progress!**
-
-A port of [jlox](https://github.com/munificent/craftinginterpreters/tree/master/java),
+A Scala port of [jlox](https://github.com/munificent/craftinginterpreters/tree/master/java),
 the Java implementation of a tree-walk interpreter for the *Lox* language,
-from the online book [Crafting Interpreters](https://craftinginterpreters.com/).
+from the excellent online book [Crafting Interpreters](https://craftinginterpreters.com/).
 
-The overall structure of the ported interpreter follows the design of that in the book,
+The overall structure follows the design in the book,
 but takes advantage of some of Scala's functional features where appropriate. Most notably,
 the visitor pattern, used extensively in jlox, is replaced by pattern matching in slox.
 
@@ -25,3 +23,9 @@ of jlox ports.
 * Lox values are stored as `Value` objects rather than `Object` objects.
 * The `Scanner` and `Parser` are implemented as tail-recursive functions.
 * Binary operator parsers are implemented using a single higher-order function.
+
+## Conclusion
+
+Scala is truly an ideal language for implementing an interpreter, taking advantage of both
+algebraic data structures for representing and processing the abstract syntax tree, as well
+as objects for storing and manipulating mutable state, such as the current position of the parser.
