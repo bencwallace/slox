@@ -7,6 +7,7 @@ class Resolver(interpreter: Interpreter) {
   private sealed trait FunctionType
   private case object NONE extends FunctionType
   private case object FUNCTION extends FunctionType
+  private case object METHOD extends FunctionType
 
   private val scopes = mutable.Stack[mutable.Map[String, Boolean]]()
   private var currentFunction: FunctionType = NONE
@@ -32,9 +33,13 @@ class Resolver(interpreter: Interpreter) {
       beginScope()
       resolve(statements)
       endScope()
-    case Class(name, _) =>
+    case Class(name, methods) =>
       declare(name)
       define(name)
+      for (method <- methods) {
+        val declaration = METHOD
+        resolveFunction(method, declaration)
+      }
     case Expression(expr) => resolve(expr)
     case If(condition, thenBranch, elseBranch) =>
       resolve(condition)

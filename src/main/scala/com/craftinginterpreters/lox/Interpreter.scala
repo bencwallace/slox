@@ -31,7 +31,12 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
 //      new Interpreter(new Environment(Some(environment))).executeBlock(statements)
     case Class(name, methods) =>
       environment.define(name.lexeme, NilVal)
-      val klass = new LoxClass(name.lexeme)
+      val ms = mutable.Map[String, LoxFunction]()
+      for (method <- methods) {
+        val function = new LoxFunction(method, environment)
+        ms += (method.name.lexeme -> function)
+      }
+      val klass = new LoxClass(name.lexeme, ms.toMap)
       environment.assign(name, klass)
     case Expression(expr) =>
       eval(expr)

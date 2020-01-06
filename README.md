@@ -21,7 +21,7 @@ of jlox ports.
 
 ## Design notes
 
-* The visitor pattern is replaced by pattern matching with case classes and sealed traits.
+* Pattern matching with case classes and sealed traits replaces the visitor pattern as well as uses of `instanceOf`.
 * Lox values are stored as `Value` objects rather than `Object` objects.
 * The `Scanner` and `Parser` are implemented as tail-recursive functions.
 * Binary operator parsers are implemented using a single higher-order function.
