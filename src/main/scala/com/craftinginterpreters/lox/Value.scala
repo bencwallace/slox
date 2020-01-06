@@ -20,7 +20,11 @@ case object NilVal extends Value {
   override def isTruthy: Boolean = false
 }
 case class Number(value: Double) extends Value {
-  override def toString: String = value.toString
+  override def toString: String = {
+    val text = value.toString
+    if (text.endsWith(".0")) text.substring(0, text.length - 2)
+    else text
+  }
 }
 case class Str(value: String) extends Value {
   override def toString: String = value
