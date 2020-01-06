@@ -14,8 +14,9 @@ object Interpreter {
 
 }
 
-class Interpreter(var environment: Environment = Interpreter.globals) {
+class Interpreter() {
 
+  private var environment = Interpreter.globals
   private val locals = mutable.Map[Expr, Int]()
 
   def interpret(statements: Seq[Stmt]): Unit =
@@ -28,13 +29,11 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
   private def execute(statement: Stmt): Unit = statement match {
     case Block(statements) =>
       executeBlock(statements, new Environment(Some(environment)))
-//      new Interpreter(new Environment(Some(environment))).executeBlock(statements)
     case Class(name, superclass, methods) =>
-      val sClass = superclass match {
-        case  None => ???
-        case Some(s @ Variable(n)) => eval(s) match {
+      val sClass = superclass map {
+        case s @ Variable(n) => eval(s) match {
           case lc @ LoxClass() => lc
-          case _ => throw new RuntimeError(n, "Superclass must be a class.")
+          case _ => throw RuntimeError(n, "Superclass must be a class.")
         }
       }
       environment.define(name.lexeme, NilVal)
@@ -66,9 +65,6 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
     locals += (expr -> depth)
 
 
-  //  private[lox] def executeBlock(statements: Seq[Stmt]): Unit =
-  //    for (statement <- statements) execute(statement)
-
   private[lox] def executeBlock(statements: Seq[Stmt], environment: Environment): Unit = {
     val previous = this.environment
     try {
@@ -83,7 +79,6 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
   private def eval(expr: Expr): Value = expr match {
     case Assign(token, expr) =>
       val value = eval(expr)
-//      environment.assign(token, value)
       locals.get(expr) match {
         case None => Interpreter.globals.assign(token, value)
         case Some(d) => environment.assignAt(d, token, value)
@@ -141,7 +136,6 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
       case _ => throw RuntimeError(t, "Operand must be a number.")
     }
     case Unary(Token(BANG), right) => Bool(eval(right).isTruthy)
-//    case Variable(token) => environment.get(token)
     case Variable(token) => lookUpVariable(token, expr)
     case _ => ???
   }

@@ -61,7 +61,7 @@ object LoxClass {
   def unapply(loxClass: LoxClass): Boolean = true
 }
 
-class LoxClass(name: String, superclass: LoxClass, methods: Map[String, LoxFunction]) extends LoxCallable {
+class LoxClass(name: String, superclass: Option[LoxClass], methods: Map[String, LoxFunction]) extends LoxCallable {
   override def toString: String = name
 
   override def arity: Int = findMethod("init") match {
@@ -78,7 +78,11 @@ class LoxClass(name: String, superclass: LoxClass, methods: Map[String, LoxFunct
     instance
   }
 
-  def findMethod(name: String): Option[LoxFunction] = methods.get(name)
+  def findMethod(name: String): Option[LoxFunction] = (methods.get(name), superclass) match {
+    case (Some(f), _) => Some(f)
+    case (None, Some(sc)) => sc.findMethod(name)
+    case _ => None
+  }
 }
 
 case class LoxInstance(klass: LoxClass) extends Value {
