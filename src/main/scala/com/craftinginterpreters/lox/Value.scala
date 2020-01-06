@@ -35,7 +35,7 @@ case class LoxInstance(klass: LoxClass) extends Value {
   def get(name: Token): Value = fields.get(name.lexeme) match {
     case Some(v) => v
     case None => klass.findMethod(name.lexeme) match {
-      case Some(m) => m
+      case Some(m) => m.bind(this)
       case None =>
         throw new RuntimeError(name, s"Undefined property '${name.lexeme}'.")
     }

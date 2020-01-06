@@ -130,6 +130,7 @@ class Interpreter(var environment: Environment = Interpreter.globals) {
         v
       case _ => throw new RuntimeError(name, "Only instances have fields.")
     }
+    case This(keyword) => lookUpVariable(keyword, expr)
     case Unary(t @ Token(MINUS), right) => eval(right) match {
       case Number(x) => Number(-x)
       case _ => throw RuntimeError(t, "Operand must be a number.")

@@ -36,10 +36,13 @@ class Resolver(interpreter: Interpreter) {
     case Class(name, methods) =>
       declare(name)
       define(name)
+      beginScope()
+      scopes.top += ("this" -> true)
       for (method <- methods) {
         val declaration = METHOD
         resolveFunction(method, declaration)
       }
+      endScope()
     case Expression(expr) => resolve(expr)
     case If(condition, thenBranch, elseBranch) =>
       resolve(condition)
@@ -85,6 +88,7 @@ class Resolver(interpreter: Interpreter) {
     case Set(obj, _, value) =>
       resolve(value)
       resolve(obj)
+    case This(keyword) => resolveLocal(expr, keyword)
     case Unary(_, right) => resolve(right)
   }
 

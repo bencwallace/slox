@@ -18,4 +18,10 @@ class LoxFunction(declaration: Function, closure: Environment) extends LoxCallab
   }
 
   override def toString: String = s"<fn ${declaration.name.lexeme}>"
+
+  def bind(instance: LoxInstance): LoxFunction = {
+    val environment = new Environment(Some(closure))
+    environment.define("this", instance)
+    new LoxFunction(declaration, environment)
+  }
 }
