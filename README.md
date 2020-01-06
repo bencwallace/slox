@@ -20,13 +20,6 @@ the visitor pattern, used extensively in jlox, is replaced by pattern matching i
 of jlox ports.
 4. Its functional nature makes it natural for writing an interpreter or compiler.
 
-## Design notes
-
-* Pattern matching with case classes and sealed traits replaces the visitor pattern as well as uses of `instanceOf`.
-* Lox values are stored as `Value` objects rather than `Object` objects.
-* The `Scanner` and `Parser` are implemented as tail-recursive functions.
-* Binary operator parsers are implemented using a single higher-order function.
-
 ## Conclusion
 
 Scala is truly an ideal language for implementing an interpreter, taking advantage of both
@@ -35,3 +28,22 @@ objects (for storing and manipulating mutable state, e.g. current parser positio
 The resulting source is also considerably shorter (some parts of the original source are
 sufficiently long and repetitive that they are generated using an auxiliary source file,
 but this is not necessary in Scala).
+
+## Misc
+
+### Design notes
+
+* Pattern matching with case classes and sealed traits replaces the visitor pattern as well as uses of `instanceOf`.
+* Lox values are stored as `Value` objects rather than `Object` objects.
+* The `Scanner` and `Parser` are implemented as tail-recursive functions.
+* Binary operator parsers are implemented using a single higher-order function.
+
+### Bugs
+
+In the following test files from [munificent](https://github.com/munificent/craftinginterpreters/tree/master/test):
+
+* closure/reuse_closure_slot.lox
+* for/closure_in_body.lox
+* for/scope.lox
+* for/syntax.lox
+* regression/40.lox (when returning `nil`)
