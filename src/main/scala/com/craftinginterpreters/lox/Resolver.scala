@@ -98,8 +98,8 @@ class Resolver(interpreter: Interpreter) {
         case _ => ()
       }
       resolveLocal(expr, name)
-    case Assign(name, expr) =>
-      resolve(expr)
+    case Assign(name, right) =>
+      resolve(right)
       resolveLocal(expr, name)
     // simple cases
     case Binary(left, _, right) =>

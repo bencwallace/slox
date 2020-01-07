@@ -89,6 +89,7 @@ class Interpreter() {
   private def eval(expr: Expr): Value = expr match {
     case Assign(token, right) =>
       val value = eval(right)
+//      locals.get(right) match {
       locals.get(expr) match {
         case None => Interpreter.globals.assign(token, value)
         case Some(d) => environment.assignAt(d, token, value)

@@ -38,13 +38,3 @@ auxiliary source file, but this is not necessary in Scala).
 * Lox values are stored as `Value` objects rather than `Object` objects.
 * The `Scanner` and `Parser` are implemented as tail-recursive functions.
 * Binary operator parsers are implemented using a single higher-order function.
-
-### Bugs
-
-In the following test files from [munificent](https://github.com/munificent/craftinginterpreters/tree/master/test):
-
-* closure/reuse_closure_slot.lox
-* for/closure_in_body.lox
-* for/scope.lox
-* for/syntax.lox
-* regression/40.lox (when returning `nil`)
