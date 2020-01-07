@@ -71,7 +71,7 @@ class LoxClass(name: String, superclass: Option[LoxClass], methods: Map[String, 
   }
 
   override def call(interpreter: Interpreter, args: Seq[Value]): Value = {
-    val instance = new LoxInstance(this)
+    val instance = LoxInstance(this)
     findMethod("init") match {
       case Some(f) => f.bind(instance).call(interpreter, args)
       case None => ()

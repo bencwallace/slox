@@ -115,14 +115,13 @@ class Resolver(interpreter: Interpreter) {
     case Set(obj, _, value) =>
       resolve(value)
       resolve(obj)
-    case Super(keyword, _) => {
+    case Super(keyword, _) =>
       currentClass match {
         case NOCLASS => Lox.error(keyword, "Cannot use 'super' outside of a class.")
         case SUBCLASS => ()
         case _ => Lox.error(keyword, "Cannot use 'super' in a class with no superclass.")
       }
       resolveLocal(expr, keyword)
-    }
     case This(keyword) => currentClass match {
       case NOCLASS => Lox.error(keyword, "Cannot use 'this' outside of a class.")
       case _ => resolveLocal(expr, keyword)

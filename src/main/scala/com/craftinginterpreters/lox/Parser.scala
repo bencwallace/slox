@@ -22,7 +22,6 @@ class Parser(tokens: Seq[Token]) {
     parseRec(Queue[Stmt]())
   }
 
-  // todo: temporary; update as appropriate
   private def topLevelParser(): Stmt =
     if (isAtEnd) End
     else declaration()

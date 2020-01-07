@@ -50,6 +50,7 @@ class Interpreter() {
       (superclass, environment.enclosing) match {
         case (None, _) => ()
         case (Some(_), Some(e)) => environment = e
+        case _ => ???
       }
       environment.assign(name, klass)
     case Expression(expr) =>
@@ -68,7 +69,7 @@ class Interpreter() {
     case Var(name, None) => environment.define(name.lexeme, NilVal)
     case Var(name, Some(expr)) => environment.define(name.lexeme, eval(expr))
     case While(condition, body) => while(eval(condition).isTruthy) execute(body)
-    case End => ???
+    case End => ()
   }
 
   private[lox] def resolve(expr: Expr, depth: Int): Unit =
@@ -89,7 +90,6 @@ class Interpreter() {
   private def eval(expr: Expr): Value = expr match {
     case Assign(token, right) =>
       val value = eval(right)
-//      locals.get(right) match {
       locals.get(expr) match {
         case None => Interpreter.globals.assign(token, value)
         case Some(d) => environment.assignAt(d, token, value)
@@ -129,7 +129,7 @@ class Interpreter() {
     case Get(obj, name) =>
       eval(obj) match {
         case objVal @ LoxInstance(_) => objVal.get(name)
-        case _ => throw new RuntimeError(name, "Only instances have properties.")
+        case _ => throw RuntimeError(name, "Only instances have properties.")
       }
     case Grouping(e) => eval(e)
     case Literal(someValue) => someValue
@@ -138,22 +138,22 @@ class Interpreter() {
         val v = eval(value)
         objVal.set(name, v)
         v
-      case _ => throw new RuntimeError(name, "Only instances have fields.")
+      case _ => throw RuntimeError(name, "Only instances have fields.")
     }
-    case Super(_, method) => {
+    case Super(_, method) =>
       val (superclass, obj) = locals.get(expr) match {
         case None => ???
         case Some(d) => (environment.getAt(d, "super"), environment.getAt(d - 1, "this"))
       }
       val m = superclass match {
-        case (lc @ LoxClass()) => lc.findMethod(method.lexeme)
+        case lc @ LoxClass() => lc.findMethod(method.lexeme)
         case _ => ???
       }
       (m, obj) match {
         case (None, _) => throw RuntimeError(method, s"Undefined property '${method.lexeme}'.'")
         case (Some(loxFunction), instance @ LoxInstance(_)) => loxFunction.bind(instance)
+        case _ => ???
       }
-    }
     case This(keyword) => lookUpVariable(keyword, expr)
     case Unary(t @ Token(MINUS), right) => eval(right) match {
       case Number(x) => Number(-x)
@@ -161,7 +161,6 @@ class Interpreter() {
     }
     case Unary(Token(BANG), right) => Bool(!eval(right).isTruthy)
     case Variable(token) => lookUpVariable(token, expr)
-    case _ => ???
   }
 
   private def lookUpVariable(token: Token, expr: Expr): Value = locals.get(expr) match {

@@ -1,9 +1,9 @@
 package com.craftinginterpreters.lox
 
-import scala.collection.mutable.Map
+import scala.collection.mutable
 
 class Environment(val enclosing: Option[Environment] = None) {
-  private val values = Map[String, Value]()
+  private val values = mutable.Map[String, Value]()
 
   def assign(token: Token, value: Value): Unit = (values.get(token.lexeme), enclosing) match {
     case (Some(_), _) => values += (token.lexeme -> value)
