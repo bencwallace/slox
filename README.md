@@ -2,20 +2,21 @@
 
 A Scala port of [jlox](https://github.com/munificent/craftinginterpreters/tree/master/java),
 the Java implementation of a tree-walk interpreter for the *Lox* language,
-from the excellent online book [Crafting Interpreters](https://craftinginterpreters.com/).
+from the excellent online book [Crafting Interpreters](https://craftinginterpreters.com/)
+by Bob Nystrom.
 I **strongly** recommend Part II of the book for understanding the design of the Lox language
 and the jlox interpreter and I look forward to reading Part III.
 
 The overall structure follows the design in the book,
 but takes advantage of some of Scala's functional features where appropriate. Most notably,
 the visitor pattern, used extensively in jlox, is replaced by pattern matching in slox
-(indeed, the book's [author](https://github.com/munificent) even suggests this).
+(indeed, the book's author hints at this).
 
 ## Why Scala?
 
 1. To learn Scala
-2. Easy to port from Java
-3. It isn't (at the time of writing) on the
+2. Natural to port from Java
+3. It wasn't on the
 [list](https://github.com/munificent/craftinginterpreters/wiki/Lox-implementations)
 of jlox ports.
 4. Its functional nature makes it natural for writing an interpreter or compiler.
@@ -23,11 +24,11 @@ of jlox ports.
 ## Conclusion
 
 Scala is truly an ideal language for implementing an interpreter, taking advantage of both
-algebraic data structures (representing and processing abstract syntax trees) and
+algebraic data structures (for representing and processing abstract syntax trees) and
 objects (for storing and manipulating mutable state, e.g. current parser position).
-The resulting source is also considerably shorter (some parts of the original source are
-sufficiently long and repetitive that they are generated using an auxiliary source file,
-but this is not necessary in Scala).
+The resulting source is also considerably shorter then the original jlox source (some parts
+of the original source are sufficiently long and repetitive that they are generated using an
+auxiliary source file, but this is not necessary in Scala).
 
 ## Misc
 
