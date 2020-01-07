@@ -25,7 +25,7 @@ sealed trait Value {
 
 abstract case class LoxCallable() extends Value {
   def arity: Int
-  def call(interpreter: Interpreter, args: Seq[Value]): Value
+  def call(args: Seq[Value]): Value
 }
 
 class LoxFunction(declaration: Function,
@@ -33,13 +33,13 @@ class LoxFunction(declaration: Function,
                   isInitializer: Boolean = false) extends LoxCallable {
   override def arity: Int = declaration.params.size
 
-  override def call(interpreter: Interpreter, args: Seq[Value]): Value = {
+  override def call(args: Seq[Value]): Value = {
     val environment = new Environment(Some(closure))
 
     for ((param, i) <- declaration.params.zipWithIndex)
       environment.define(param.lexeme, args(i))
     try {
-      interpreter.executeBlock(declaration.body, environment)
+      Interpreter.executeBlock(declaration.body, environment)
     } catch {
       case ReturnException(value) =>
         if (isInitializer) return closure.getAt(0, "this")
@@ -70,10 +70,10 @@ class LoxClass(name: String, superclass: Option[LoxClass], methods: Map[String, 
     case Some(f) => f.arity
   }
 
-  override def call(interpreter: Interpreter, args: Seq[Value]): Value = {
+  override def call(args: Seq[Value]): Value = {
     val instance = LoxInstance(this)
     findMethod("init") match {
-      case Some(f) => f.bind(instance).call(interpreter, args)
+      case Some(f) => f.bind(instance).call(args)
       case None => ()
     }
     instance

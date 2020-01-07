@@ -3,6 +3,7 @@ package com.craftinginterpreters.lox
 import scala.collection.mutable
 
 class Environment(val enclosing: Option[Environment] = None) {
+
   private val values = mutable.Map[String, Value]()
 
   def assign(token: Token, value: Value): Unit = (values.get(token.lexeme), enclosing) match {
@@ -32,4 +33,5 @@ class Environment(val enclosing: Option[Environment] = None) {
   private def ancestor(distance: Int): Option[Environment] =
     if (distance == 0) Some(this)
     else enclosing.flatMap(e => e.ancestor(distance - 1))
+
 }

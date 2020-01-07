@@ -30,14 +30,11 @@ object Lox {
 
       if (hadError || hadRuntimeError) println()
 
-      val interpreter = new Interpreter()
-
-      val resolver = new Resolver(interpreter)
-      resolver.resolve(statements)
+      Resolver.resolve(statements)
 
       if (hadError) return
 
-      interpreter.interpret(statements)
+      Interpreter.interpret(statements)
     }
 
   private def runPrompt(): Unit =
@@ -68,9 +65,10 @@ object Lox {
 
   private[lox] def error(line: Int, message: String): Unit = report(line, "", message)
 
-  private[lox] def error(token: Token, message: String): Unit =
-    if (token.tokenType == EOF) report(token.line, " at end", message)
-    else report(token.line, s" at '${token.lexeme}'", message)
+  private[lox] def error(token: Token, message: String): Unit = token match {
+    case Token(EOF) => report(token.line, " at end", message)
+    case _ => report(token.line, s" at '${token.lexeme}'", message)
+  }
 
   // error reporting
 

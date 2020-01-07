@@ -2,7 +2,7 @@ package com.craftinginterpreters.lox
 
 import scala.collection.mutable
 
-class Resolver(interpreter: Interpreter) {
+object Resolver {
 
   private sealed trait FunctionType
   private case object NONE extends FunctionType
@@ -132,8 +132,7 @@ class Resolver(interpreter: Interpreter) {
   private def resolveLocal(expr: Expr, name: Token): Unit =
     for ((scope, i) <- scopes.zipWithIndex)
       if (scope.contains(name.lexeme)) {
-//        interpreter.resolve(expr, scopes.size - 1 - i)
-        interpreter.resolve(expr, i)
+        Interpreter.resolve(expr, i)
         return
       }
 

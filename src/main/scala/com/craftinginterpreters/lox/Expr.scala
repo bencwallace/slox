@@ -1,6 +1,7 @@
 package com.craftinginterpreters.lox
 
 sealed trait Expr {
+
   override def toString: String = this match {
     case Assign(t @ Token(NUMBER), expr) => parenthesize("=", Literal(Number(t.lexeme.toDouble)), expr)
     case Assign(t @ Token(STRING), expr) => parenthesize("=", Literal(Str(t.lexeme)), expr)
@@ -26,6 +27,7 @@ sealed trait Expr {
 
     builder.toString
   }
+
 }
 
 case class Assign(token: Token, expr: Expr) extends Expr

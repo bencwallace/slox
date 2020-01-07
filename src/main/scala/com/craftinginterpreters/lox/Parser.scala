@@ -2,7 +2,7 @@ package com.craftinginterpreters.lox
 
 import scala.annotation.tailrec
 import scala.collection.immutable.Queue
-import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+import scala.collection.mutable.ArrayBuffer
 
 class Parser(tokens: Seq[Token]) {
 
@@ -258,7 +258,7 @@ class Parser(tokens: Seq[Token]) {
 
   // function call parser
   private def finishCall(callee: Expr): Expr = {
-    val args = new ListBuffer[Expr]()
+    val args = new ArrayBuffer[Expr]()
     if (!check(RIGHT_PAREN))
       do {
         if (args.size >= 255)

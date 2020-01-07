@@ -8,14 +8,9 @@ object Interpreter {
   globals.define("clock", new LoxCallable {
     override def arity: Int = 0
 
-    override def call(interpreter: Interpreter, args: Seq[Value]): Value =
+    override def call(args: Seq[Value]): Value =
       Number(System.currentTimeMillis / 1000.0)
   })
-
-}
-
-class Interpreter() {
-
   private var environment = Interpreter.globals
   private val locals = mutable.Map[Expr, Int]()
 
@@ -123,7 +118,7 @@ class Interpreter() {
         case f @ LoxCallable() =>
           if (vals.size != f.arity)
             throw RuntimeError(paren, s"Expected ${f.arity} arguments but got ${args.size}.")
-          else f. call(this, vals)
+          else f.call(vals)
         case _ => throw RuntimeError(paren, "Can only call functions and classes.")
       }
     case Get(obj, name) =>
