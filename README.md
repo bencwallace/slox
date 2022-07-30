@@ -12,6 +12,33 @@ but takes advantage of some of Scala's functional features where appropriate. Mo
 the visitor pattern, used extensively in jlox, is replaced by pattern matching in slox
 (indeed, the book's author hints at this).
 
+## Usage
+
+### Build
+
+slox can be built with [sbt](https://www.scala-sbt.org/), which requires the Java runtime:
+
+```
+git clone https://github.com/bencwallace/slox.git
+cd slox
+sbt compile
+```
+
+### Run
+
+When built with sbt (see above), slox can also be run via sbt:
+
+```
+sbt run
+[info] Loading project definition from /home/bwallace/repos/slox/project
+[info] Loading settings for project slox from build.sbt ...
+[info] Set current project to slox (in build file:/home/bwallace/repos/slox/)
+[info] running com.craftinginterpreters.lox.Lox 
+> print(1 + 1);
+2
+> 
+```
+
 ## Why Scala?
 
 1. To learn Scala
